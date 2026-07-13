@@ -1,3 +1,4 @@
+[![Java CI with Maven](https://github.com/Roland-Hufnagel/session-planner/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/Roland-Hufnagel/session-planner/actions/workflows/backend.yml)
 # Session Planner
 
 Coaching-Tool zum Planen von Bootcamp-**Cohorten** und deren **Shifts** und zum
