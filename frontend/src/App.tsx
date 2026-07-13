@@ -4,13 +4,13 @@ import axios from "axios";
 
 function App() {
 
-    const [welcome, setWelcome] = useState("");
+    const [name, setName] = useState("");
     useEffect(() => {
-        axios.get("/api").then(res => setWelcome(res.data)).catch(e => setWelcome(e.message))
+        axios.get("/api").then(res => setName(res.data)).catch(e => setName(e.message))
     }, []);
     return (
         <h1>
-            {welcome}
+            Welcome to <b>{name}</b>
         </h1>
     )
 }

@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class HelloController {
     @GetMapping("/api")
     public String greet() {
-        return "Hello Session Planner";
+        return "Session Planner";
     }
 }
