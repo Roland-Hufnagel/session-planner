@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session Planner — Projektübersicht</title>
+<style>
+  :root {
+    --ink: #1a1d29;
+    --muted: #5b6474;
+    --line: #e2e6ee;
+    --bg: #ffffff;
+    --card: #f7f9fc;
+    --accent: #2f5fe0;
+    --accent-soft: #eaf0ff;
+    --green: #1f9d55;
+    --amber: #b7791f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: #eef1f6;
+    margin: 0;
+    line-height: 1.5;
+    font-size: 20px;
+  }
+  .page {
+    background: var(--bg);
+    max-width: 900px;
+    margin: 24px auto;
+    padding: 0 11mm 10mm 11mm;
+    box-shadow: 0 2px 18px rgba(20,30,60,.08);
+  }
+  .page + .page { margin-top: 24px; }
+
+  /* ---------- Cover ---------- */
+  .cover { padding-top: 18mm; }
+  .eyebrow {
+    font-size: 18px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  h1 { font-size: 46px; line-height: 1.15; margin: 10px 0 6px; }
+  .subtitle { font-size: 24px; color: var(--muted); margin: 0 0 26px; font-weight: 500; }
+  .summary { font-size: 22px; margin: 0 0 26px; }
+
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }
+  .fact {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px; page-break-inside: avoid;
+  }
+  .fact .label { font-size: 18px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .fact .value { font-size: 20px; font-weight: 600; margin-top: 4px; }
+
+  .entities { margin: 24px 0; }
+  .entity {
+    background: var(--accent-soft); border-radius: 12px; padding: 14px 18px;
+    margin-bottom: 12px; page-break-inside: avoid;
+  }
+  .entity .name { font-size: 20px; font-weight: 700; }
+  .entity .fields { font-size: 20px; color: var(--muted); }
+  code {
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 20px; font-weight: 600; background: #eef1f6; padding: 1px 6px; border-radius: 6px;
+  }
+
+  h2 {
+    font-size: 30px; margin: 8px 0 18px; padding-top: 6px;
+    border-bottom: 3px solid var(--accent); display: inline-block;
+  }
+  h3 { font-size: 24px; margin: 26px 0 12px; }
+
+  /* ---------- Tickets ---------- */
+  .ticket {
+    background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--accent);
+    border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; page-break-inside: avoid;
+  }
+  .ticket-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .ticket-id { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: .05em; }
+  .ticket-title { font-size: 22px; font-weight: 700; margin: 2px 0 8px; }
+  .est {
+    font-size: 18px; font-weight: 700; color: var(--amber);
+    background: #fdf6e7; border: 1px solid #f0e2bf; border-radius: 20px; padding: 3px 12px; white-space: nowrap;
+  }
+  .goal { font-size: 20px; margin: 0 0 10px; }
+  .goal .k { font-weight: 700; }
+  .ticket ul { margin: 8px 0 0; padding-left: 22px; }
+  .ticket li { font-size: 20px; margin-bottom: 5px; }
+  .dod { margin-top: 10px; font-size: 20px; }
+  .dod .k { font-weight: 700; color: var(--green); }
+  .layer { font-size: 18px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 24px 0 8px; }
+
+  /* ---------- Estimate table ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: 20px; margin: 12px 0; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th { font-size: 18px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tr.total td { font-weight: 800; border-top: 2px solid var(--ink); border-bottom: none; font-size: 21px; }
+  .note { font-size: 20px; background: var(--accent-soft); border-radius: 12px; padding: 16px 18px; margin-top: 16px; page-break-inside: avoid; }
+
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; margin: 0 auto; max-width: none; }
+    .page + .page { page-break-before: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ DECKBLATT ============ -->
+<section class="page cover">
+  <div class="eyebrow">neue fische · Java-Fullstack Capstone</div>
+  <h1>Session Planner</h1>
+  <p class="subtitle">Internes Coach-Tool zum Planen von Sessions und Zuweisen an Coaches</p>
+
+  <p class="summary">
+    Der <strong>Session Planner</strong> hilft neue-fische-Coaches, ihre <strong>Cohorten</strong> und
+    einzelnen <strong>Sessions (Shifts)</strong> zu verwalten und Shifts gezielt einzelnen Coaches
+    zuzuweisen. Herzstück ist die <strong>Schedule-View</strong>: eine wählbare Woche (Mo–Fr) zeigt alle
+    Shifts in einem Raster — zunächst in einer „Unassigned“-Spur, per Dropdown werden sie einem Coach
+    zugewiesen und wandern in dessen Spur.
+  </p>
+
+  <div class="facts">
+    <div class="fact"><div class="label">Backend</div><div class="value">Java · Spring Boot · REST</div></div>
+    <div class="fact"><div class="label">Datenbank</div><div class="value">PostgreSQL · Spring Data JPA</div></div>
+    <div class="fact"><div class="label">Frontend</div><div class="value">React · TypeScript · Vite</div></div>
+    <div class="fact"><div class="label">Frontend-Libs</div><div class="value">SWR · axios · React Hook Form · Styled Components</div></div>
+    <div class="fact"><div class="label">Auth</div><div class="value">GitHub OAuth2 (Provisioning-by-githubName)</div></div>
+    <div class="fact"><div class="label">Qualität</div><div class="value">Pflicht-Tests (Testcontainers) · SonarQube</div></div>
+    <div class="fact"><div class="label">Deployment</div><div class="value">Docker · Docker Hub · render.com (Web Service + Postgres)</div></div>
+    <div class="fact"><div class="label">Zeitrahmen</div><div class="value">4 Wochen · MVP ≈ 3 Wochen</div></div>
+  </div>
+
+  <h3>Datenmodell</h3>
+  <div class="entities">
+    <div class="entity">
+      <div class="name">User</div>
+      <div class="fields"><code>name</code> · <code>role</code> (MVP: ADMIN) · <code>githubName</code> (unique, Login-Matching) · optional email/avatar</div>
+    </div>
+    <div class="entity">
+      <div class="name">Cohort</div>
+      <div class="fields"><code>name</code> · <code>startDate</code> · <code>endDate</code> · <code>federalState</code> (Bundesland) · <code>courseName</code></div>
+    </div>
+    <div class="entity">
+      <div class="name">Shift</div>
+      <div class="fields"><code>date</code> · <code>startTime</code> · <code>endTime</code> · <code>title</code> · <code>cohort</code> (→Cohort) · <code>coach</code> (→User, nullable)</div>
+    </div>
+  </div>
+  <p class="note">Hinweis: Die Entity-Felder werden im Verlauf noch erweitert; diese Übersicht bildet den aktuellen Planungsstand ab.</p>
+</section>
+
+<!-- ============ MVP-TICKETS ============ -->
+<section class="page">
+  <h2>MVP-Tickets</h2>
+
+  <div class="layer">Fundament</div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-1</span><span class="est">~2 Tage</span></div>
+    <div class="ticket-title">Projekt-Setup &amp; Single-Deployable</div>
+    <p class="goal"><span class="k">Ziel:</span> Lauffähiges Grundgerüst mit einem Deployable-Artefakt.</p>
+    <ul>
+      <li>Repo mit getrennten Ordnern <code>backend/</code> (Spring Boot, Maven) und <code>frontend/</code> (Vite + TS)</li>
+      <li>Frontend-Build <strong>manuell</strong> per <code>npm run build</code> → Output nach <code>backend/src/main/resources/static/</code></li>
+      <li>PostgreSQL lokal + <code>application.properties</code>; Dev-Proxy Vite → :8080</li>
+      <li>Feature-Package-Struktur (auth/user/cohort/shift/config)</li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> <code>mvn package</code> erzeugt ein JAR, das API und die gebaute UI ausliefert.</p>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-2</span><span class="est">~1 Tag</span></div>
+    <div class="ticket-title">CI: Tests, SonarQube &amp; Coverage</div>
+    <p class="goal"><span class="k">Ziel:</span> Automatische Qualitätssicherung ab dem ersten Commit.</p>
+    <ul>
+      <li>GitHub-Actions-Pipeline (Build + Test bei jedem Push/PR)</li>
+      <li>JaCoCo-Coverage-Report</li>
+      <li>SonarQube/SonarCloud-Analyse eingebunden</li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> Pipeline grün, Coverage &amp; Sonar-Report sichtbar.</p>
+  </div>
+
+  <div class="layer">Auth</div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-3</span><span class="est">~2,5 Tage</span></div>
+    <div class="ticket-title">GitHub OAuth2 Login (Provisioning-by-githubName)</div>
+    <p class="goal"><span class="k">Ziel:</span> Nur bekannte User dürfen sich einloggen.</p>
+    <ul>
+      <li>Spring Security OAuth2-Login über GitHub</li>
+      <li>Custom <code>OAuth2UserService</code>: bestehenden User per <code>githubName</code> matchen — <strong>kein Match ⇒ Zugriff verweigert</strong> (kein Auto-Upsert)</li>
+      <li><code>GET /api/auth/me</code>, Logout, <code>/api/**</code> abgesichert</li>
+      <li>CSRF via <code>CookieCsrfTokenRepository</code> + axios xsrf-Config</li>
+      <li>Security-Tests (bekannter vs. unbekannter githubName)</li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> Bekannter GitHub-User kommt rein, unbekannter wird abgelehnt.</p>
+  </div>
+
+  <div class="layer">CRUD-Entitäten</div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-4</span><span class="est">~1,5 Tage</span></div>
+    <div class="ticket-title">User — Backend CRUD + Tests</div>
+    <p class="goal"><span class="k">Ziel:</span> Vollständige User-API als Referenzmuster für die anderen Entitäten.</p>
+    <ul>
+      <li>Entity, Repository, Service, Controller, Request-/Response-DTOs (<code>record</code>)</li>
+      <li>Endpunkte <code>GET/POST/PUT/DELETE /api/users</code>, Validierung, <code>@RestControllerAdvice</code></li>
+      <li>Controller- (MockMvc) + Service-Tests (Mockito)</li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> CRUD durchtestbar, Tests grün.</p>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-5</span><span class="est">~1,5 Tage</span></div>
+    <div class="ticket-title">User — Frontend</div>
+    <p class="goal"><span class="k">Ziel:</span> User-View mit dem wiederverwendbaren Formularmuster.</p>
+    <ul>
+      <li>Liste (Name, Rolle, GitHub-Name); Detail-Modal mit Edit/Delete; Create-Button</li>
+      <li><strong>Ein</strong> RHF-Formular für Create + Edit (Edit = vorbefüllt)</li>
+      <li>SWR-Hook <code>useUsers</code> + zentrale axios-Instanz + <code>mutate()</code></li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> User anlegen, bearbeiten, löschen im UI.</p>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-6</span><span class="est">~1 Tag</span></div>
+    <div class="ticket-title">Cohort — Backend CRUD + Tests</div>
+    <p class="goal"><span class="k">Ziel:</span> Cohort-API nach dem User-Muster.</p>
+    <ul>
+      <li>Entity/Repo/Service/Controller/DTOs für <code>name, startDate, endDate, federalState, courseName</code></li>
+      <li>Bundesland als Enum; Controller-/Service-Tests</li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> CRUD + Tests grün.</p>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-7</span><span class="est">~1 Tag</span></div>
+    <div class="ticket-title">Cohort — Frontend</div>
+    <p class="goal"><span class="k">Ziel:</span> Cohort-View analog zu Users.</p>
+    <ul>
+      <li>Liste + Detail-Modal + wiederverwendbares Formular (Datumsfelder, Bundesland-Dropdown)</li>
+      <li>SWR-Hook <code>useCohorts</code></li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> Cohorten im UI verwaltbar.</p>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-8</span><span class="est">~2 Tage</span></div>
+    <div class="ticket-title">Shift — Backend CRUD, Range-Query &amp; Assign</div>
+    <p class="goal"><span class="k">Ziel:</span> Shift-API inkl. der für Schedule nötigen Endpunkte.</p>
+    <ul>
+      <li>CRUD; Relationen <code>cohort</code>/<code>coach</code> als IDs in Requests, eingebettet in Responses</li>
+      <li><code>GET /api/shifts?from=&amp;to=</code> (Wochen-Range)</li>
+      <li><code>PUT /api/shifts/{id}/coach</code> — <code>coachId</code> oder <code>null</code> (Unassign)</li>
+      <li>Zeit-Validierung (<code>startTime &lt; endTime</code>); Tests</li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> CRUD, Range-Query &amp; Assign inkl. null getestet.</p>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-9</span><span class="est">~1,5 Tage</span></div>
+    <div class="ticket-title">Shift — Frontend</div>
+    <p class="goal"><span class="k">Ziel:</span> Shift-View mit Cohort- und Coach-Auswahl.</p>
+    <ul>
+      <li>Liste (Datum, von/bis, Titel, Cohort, Coach) + Detail-Modal</li>
+      <li>Wiederverwendbares Formular mit Cohort- und Coach-Dropdown (Coach default null)</li>
+      <li>SWR-Hook <code>useShifts</code></li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> Shifts im UI verwaltbar.</p>
+  </div>
+
+  <div class="layer">Hauptfeature &amp; Abschluss</div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-10</span><span class="est">~2,5 Tage</span></div>
+    <div class="ticket-title">Schedule-View</div>
+    <p class="goal"><span class="k">Ziel:</span> Wochen-Raster mit Zuweisung — das Herzstück der App.</p>
+    <ul>
+      <li>Wochen-Picker (Mo–Fr); Range → <code>GET /api/shifts?from=&amp;to=</code> + <code>GET /api/users</code></li>
+      <li>Raster: „Unassigned“-Spur oben, darunter je User eine Coach-Spur</li>
+      <li>Client-seitiges Grouping der Shifts nach Coach</li>
+      <li>Coach-Dropdown auf der Shift-Karte ⇒ <code>PUT .../coach</code> (inkl. Unassign) + <code>mutate()</code></li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> Zuweisen verschiebt die Karte live von „Unassigned“ in die Coach-Spur.</p>
+  </div>
+
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">SP-11</span><span class="est">~1,5 Tage</span></div>
+    <div class="ticket-title">CD &amp; Deployment (Docker → Docker Hub → Render)</div>
+    <p class="goal"><span class="k">Ziel:</span> Automatisiertes Deployment (idealerweise früh in Woche 1 aufgesetzt, hier gehärtet).</p>
+    <ul>
+      <li>Multi-Stage-<code>Dockerfile</code>: <code>mvn package</code> → schlankes JRE-Runtime-Image</li>
+      <li>GitHub Action: Image bauen → zu <strong>Docker Hub</strong> pushen → <strong>Render</strong>-Deploy-Hook triggern</li>
+      <li>Render: <strong>Web Service</strong> (Docker-Image) + managed <strong>PostgreSQL</strong></li>
+      <li>Secrets/Env (OAuth, DB-URL, Docker-Hub-Token, Render-Hook); Coverage/Sonar-Findings aufräumen</li>
+      <li>End-to-End-Durchlauf: Login → CRUD → Schedule-Zuweisung auf der deployten App</li>
+    </ul>
+    <p class="dod"><span class="k">DoD:</span> Push aktualisiert das Docker-Hub-Image und deployt automatisch auf Render; keine kritischen Findings.</p>
+  </div>
+</section>
+
+<!-- ============ ZEITSCHÄTZUNG & POST-MVP ============ -->
+<section class="page">
+  <h2>Zeitschätzung &amp; Ausblick</h2>
+
+  <table>
+    <thead><tr><th>Bereich</th><th class="num">Aufwand</th></tr></thead>
+    <tbody>
+      <tr><td>Fundament (SP-1, SP-2)</td><td class="num">~3 T</td></tr>
+      <tr><td>Auth (SP-3)</td><td class="num">~2,5 T</td></tr>
+      <tr><td>User (SP-4, SP-5)</td><td class="num">~3 T</td></tr>
+      <tr><td>Cohort (SP-6, SP-7)</td><td class="num">~2 T</td></tr>
+      <tr><td>Shift (SP-8, SP-9)</td><td class="num">~3,5 T</td></tr>
+      <tr><td>Schedule (SP-10)</td><td class="num">~2,5 T</td></tr>
+      <tr><td>Deploy &amp; Härtung (SP-11)</td><td class="num">~1,5 T</td></tr>
+      <tr class="total"><td>MVP gesamt</td><td class="num">~15–18 Dev-Tage (≈ 3 Wochen)</td></tr>
+    </tbody>
+  </table>
+
+  <p class="note">
+    Bei 20 Arbeitstagen in 4 Wochen bleibt nach dem MVP <strong>~1 Woche</strong> für Post-MVP.
+    Realistisch: <strong>ein größeres</strong> Feature <em>oder</em> <strong>zwei kleine</strong>.
+    Größte Zeitfresser/Risiken: das OAuth2-Setup (SP-3) und die Schedule-View (SP-10) —
+    ab der zweiten Entität beschleunigt das wiederholte CRUD-Muster.
+  </p>
+
+  <h3>Post-MVP-Optionen</h3>
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">POST-A</span><span class="est">~3–4 Tage</span></div>
+    <div class="ticket-title">CSV-Import inkl. Feiertage (Flaggschiff)</div>
+    <ul>
+      <li>CSV je Kurs importieren → Shifts einer Cohorte automatisch anlegen</li>
+      <li>Bundeslandspezifische Feiertage via <strong>Nager.Date-API</strong> ausklammern</li>
+    </ul>
+  </div>
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">POST-B</span><span class="est">~2 Tage</span></div>
+    <div class="ticket-title">Off-Times</div>
+    <ul><li>Spezielle Shifts, die eine Coach-Zuweisung in diesem Zeitraum blockieren</li></ul>
+  </div>
+  <div class="ticket">
+    <div class="ticket-head"><span class="ticket-id">POST-C</span><span class="est">~2 Tage</span></div>
+    <div class="ticket-title">Rollen-Management</div>
+    <ul><li>Rollen jenseits von ADMIN; Coach-Lanes dann rollengefiltert</li></ul>
+  </div>
+</section>
+
+</body>
+</html>

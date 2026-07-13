@@ -1,5 +1,4 @@
 .idea
 *.iml
-docs
 .DS_Store
 backend/src/main/resources/static
