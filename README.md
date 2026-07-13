@@ -1,4 +1,5 @@
-[![Java CI with Maven](https://github.com/Roland-Hufnagel/session-planner/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/Roland-Hufnagel/session-planner/actions/workflows/backend.yml)
+[![Java CI with Maven](https://github.com/Roland-Hufnagel/session-planner/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Roland-Hufnagel/session-planner/actions/workflows/ci.yml)
+
 # Session Planner
 
 Coaching-Tool zum Planen von Bootcamp-**Cohorten** und deren **Shifts** und zum
@@ -9,13 +10,13 @@ Zuweisen von **Coaches** zu einzelnen Shifts. Kernstück ist eine Wochen-Ansicht
 
 ## Tech-Stack
 
-| Bereich   | Technologie                                             |
-| --------- | ------------------------------------------------------- |
-| Backend   | Java 25, Spring Boot 4.1, Maven, Spring Data JPA        |
-| Datenbank | PostgreSQL                                              |
-| Frontend  | React 19, TypeScript, Vite 8                            |
-| Auth      | GitHub OAuth2 (Login nur für vorab angelegte User)      |
-| Deployment| Docker → Docker Hub → Render (Single-Deployable JAR)    |
+| Bereich    | Technologie                                          |
+|------------|------------------------------------------------------|
+| Backend    | Java 25, Spring Boot 4.1, Maven, Spring Data JPA     |
+| Datenbank  | PostgreSQL                                           |
+| Frontend   | React 19, TypeScript, Vite 8                         |
+| Auth       | GitHub OAuth2 (Login nur für vorab angelegte User)   |
+| Deployment | Docker → Docker Hub → Render (Single-Deployable JAR) |
 
 ## Projektstruktur
 
