@@ -1,17 +1,24 @@
 package org.example.backend.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.example.backend.model.Role;
 import org.example.backend.model.User;
-import org.springframework.validation.annotation.Validated;
 
-@Validated
 public record UserRequestDto(
-
+        @NotBlank
         String name,
+        @NotBlank
         String nickname,
+        @NotNull
         Role role,
+        @NotBlank
         String githubName,
+        @NotBlank
+        @Email
         String email,
+        // nullable -> no validation
         String avatarUrl
 ) {
     public User toEntity() {

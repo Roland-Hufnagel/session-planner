@@ -1,10 +1,10 @@
 package org.example.backend.controller;
 
+import jakarta.validation.Valid;
 import org.example.backend.dto.UserRequestDto;
 import org.example.backend.dto.UserResponseDto;
 import org.example.backend.service.UserService;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,10 +31,14 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDto createUser(@RequestBody UserRequestDto userRequestDto) {
+    public UserResponseDto createUser(@Valid @RequestBody UserRequestDto userRequestDto) {
         return userService.create(userRequestDto);
     }
 
+    @PutMapping("/{id}")
+    public UserResponseDto updateUser(@PathVariable UUID id, @Valid @RequestBody UserRequestDto userRequestDto) {
+        return userService.updateUser(id, userRequestDto);
+    }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -27,7 +27,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    // Hibernate automatically creates table name 'github_name' from field 'githubName'
+    // Hibernate automatically creates column name 'github_name' from field 'githubName'
     @Column(nullable = false, unique = true)
     private String githubName;
 
