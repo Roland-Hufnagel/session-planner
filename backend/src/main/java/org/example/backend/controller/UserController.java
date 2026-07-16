@@ -32,7 +32,7 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponseDto createUser(@Valid @RequestBody UserRequestDto userRequestDto) {
-        return userService.create(userRequestDto);
+        return userService.createUser(userRequestDto);
     }
 
     @PutMapping("/{id}")
