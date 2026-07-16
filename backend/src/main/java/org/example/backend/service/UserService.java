@@ -1,15 +1,13 @@
 package org.example.backend.service;
 
-//import jakarta.transaction.Transactional;
-
 import org.example.backend.dto.UserRequestDto;
 import org.example.backend.dto.UserResponseDto;
+import org.example.backend.exception.DuplicateUserException;
+import org.example.backend.exception.UserNotFoundException;
 import org.example.backend.model.User;
 import org.example.backend.repository.UserRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +29,7 @@ public class UserService {
     }
 
     public UserResponseDto findUserById(UUID id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
                 "No user found with id: " + id));
         return UserResponseDto.from(user);
     }
@@ -39,8 +37,7 @@ public class UserService {
     @Transactional
     public void deleteUserById(UUID id) {
         if (!userRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "No user found with id: " + id);
+            throw new UserNotFoundException("No user found with id: " + id);
         }
         userRepository.deleteById(id);
     }
@@ -49,13 +46,12 @@ public class UserService {
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
         if (userRepository.existsByEmail(userRequestDto.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
+            throw new DuplicateUserException(
                     "Email already exists: " + userRequestDto.email());
         }
         if (userRepository.existsByGithubName(userRequestDto.githubName())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "GithubName already exists: " +
-                            userRequestDto.githubName());
+            throw new DuplicateUserException("GithubName already exists: " +
+                    userRequestDto.githubName());
         }
         User newUser = userRequestDto.toEntity();
         User savedUser = userRepository.save(newUser);
@@ -65,17 +61,16 @@ public class UserService {
     @Transactional
     public UserResponseDto updateUser(UUID id, UserRequestDto userRequestDto) {
         // first check existence!
-        User existingUser = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+        User existingUser = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(
                 "No user found with id: " + id));
         // then check duplicates:
         if (userRepository.existsByEmailAndIdNot(userRequestDto.email(), id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
+            throw new DuplicateUserException(
                     "Email already exists: " + userRequestDto.email());
         }
         if (userRepository.existsByGithubNameAndIdNot(userRequestDto.githubName(), id)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "GithubName already exists: " +
-                            userRequestDto.githubName());
+            throw new DuplicateUserException("GithubName already exists: " +
+                    userRequestDto.githubName());
         }
 
         existingUser.setName(userRequestDto.name());
