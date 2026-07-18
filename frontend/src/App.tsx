@@ -2,16 +2,28 @@ import './App.css'
 import {useEffect, useState} from "react";
 import axios from "axios";
 
+type User = {
+    id: string,
+    name: string,
+    nickname: string,
+    role: string,
+    githubName: string,
+    email: string,
+    avatarUrl?: string
+}
+
 function App() {
 
-    const [name, setName] = useState("");
+    const [users, setUsers] = useState<User[]>([]);
     useEffect(() => {
-        axios.get("/api").then(res => setName(res.data)).catch(e => setName(e.message))
+        axios.get("/api/users").then(res => setUsers(res.data)).catch(e => console.error(e.message))
     }, []);
     return (
-        <h1>
-            Welcome to <b>{name}</b>
-        </h1>
+        <>
+            <h1>Users:</h1>
+            {users.map(user => <p key={user.id}>{user.name}</p>)}
+        </>
+
     )
 }
 
