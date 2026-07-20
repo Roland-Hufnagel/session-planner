@@ -13,15 +13,15 @@ Konvention: „Blocked by" nennt Voraussetzungs-Issues.
 Grundgerüst des Monorepos mit getrennten `backend/`- und `frontend/`-Ordnern. Frontend wird bewusst **manuell** gebaut (kein Maven-Frontend-Plugin) und in die static-Resources des Backends gelegt, sodass ein JAR API + UI ausliefert.
 
 **Tasks**
-- [ ] `backend/` (Spring Boot, Maven, Java) + `frontend/` (Vite + React + TS) anlegen
-- [ ] Package-Struktur nach Layer: `controller`, `service`, `repository`, `model`, `dto`, `config`, `security`
-- [ ] Vite-Dev-Proxy `/api` → `:8080`
-- [ ] Build-Doku: `npm run build` → Output nach `backend/src/main/resources/static/`
+- [x] `backend/` (Spring Boot, Maven, Java) + `frontend/` (Vite + React + TS) anlegen
+- [x] Package-Struktur nach Layer: `controller`, `service`, `repository`, `model`, `dto`, `config`, `security`
+- [x] Vite-Dev-Proxy `/api` → `:8080`
+- [x] Build-Doku: `npm run build` → Output nach `backend/src/main/resources/static/`
 
 **Akzeptanzkriterien**
-- [ ] `mvn package` erzeugt ein JAR, das API **und** gebaute UI ausliefert
-- [ ] `npm run dev` läuft lokal gegen das Backend
-- [ ] README beschreibt den Build-Ablauf
+- [x] `mvn package` erzeugt ein JAR, das API **und** gebaute UI ausliefert
+- [x] `npm run dev` läuft lokal gegen das Backend
+- [x] README beschreibt den Build-Ablauf
 
 ---
 
@@ -32,14 +32,14 @@ Grundgerüst des Monorepos mit getrennten `backend/`- und `frontend/`-Ordnern. F
 Qualitätssicherung ab dem ersten Commit — Pflicht-Tests + Sonar sind Projektvorgabe.
 
 **Tasks**
-- [ ] GitHub-Action: Build + Test bei jedem Push/PR
-- [ ] JaCoCo-Coverage-Report generieren
-- [ ] SonarQube/SonarCloud-Analyse einbinden (Quality Gate)
+- [x] GitHub-Action: Build + Test bei jedem Push/PR
+- [x] JaCoCo-Coverage-Report generieren
+- [x] SonarQube/SonarCloud-Analyse einbinden (Quality Gate)
 
 **Akzeptanzkriterien**
-- [ ] Pipeline läuft grün bei Push/PR
-- [ ] Coverage-Report + Sonar-Analyse sichtbar
-- [ ] Quality Gate schlägt bei kritischen Findings an
+- [x] Pipeline läuft grün bei Push/PR
+- [x] Coverage-Report + Sonar-Analyse sichtbar
+- [x] Quality Gate schlägt bei kritischen Findings an
 
 ---
 
