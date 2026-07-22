@@ -1,30 +1,21 @@
-import './App.css'
-import {useEffect, useState} from "react";
-import axios from "axios";
+import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
+import {Layout} from "./components/layout/Layout";
+import {UsersPage} from "./pages/UsersPage";
+import {UserDetailPage} from "./pages/UserDetailPage";
 
-type User = {
-    id: string,
-    name: string,
-    nickname: string,
-    role: string,
-    githubName: string,
-    email: string,
-    avatarUrl?: string
-}
 
 function App() {
-
-    const [users, setUsers] = useState<User[]>([]);
-    useEffect(() => {
-        axios.get("/api/users").then(res => setUsers(res.data)).catch(e => console.error(e.message))
-    }, []);
     return (
-        <>
-            <h1>Users:</h1>
-            {users.map(user => <p key={user.id}>{user.name}</p>)}
-        </>
-
-    )
+        <BrowserRouter>
+            <Layout>
+                <Routes>
+                    <Route path="/users" element={<UsersPage/>}/>
+                    <Route path="/users/:id" element={<UserDetailPage/>}/>
+                    <Route path="*" element={<Navigate to="/users" replace/>}/>
+                </Routes>
+            </Layout>
+        </BrowserRouter>
+    );
 }
 
-export default App
+export default App;
