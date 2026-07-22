@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import {createUser, deleteUser, fetcher, updateUser, USERS_KEY} from "../api/users";
+import {createUser, deleteUser, fetcher, updateUser, USERS_ENDPOINT} from "../api/users";
 import type {User, UserInput} from "../types/user";
 
 /**
@@ -11,7 +11,7 @@ import type {User, UserInput} from "../types/user";
  * (rollbackOnError).
  */
 export function useUsers() {
-    const {data, error, isLoading, mutate} = useSWR<User[]>(USERS_KEY, fetcher);
+    const {data, error, isLoading, mutate} = useSWR<User[]>(USERS_ENDPOINT, fetcher);
 
     const users = data ?? [];
 
