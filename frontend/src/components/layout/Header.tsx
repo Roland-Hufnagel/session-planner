@@ -1,11 +1,19 @@
 import styled from "styled-components";
 import {useTheme} from "../../hooks/useTheme";
 import {useAuth} from "../../hooks/useAuth.ts";
+import {useNavigate} from "react-router-dom";
+import {Button} from "../ui/Button.tsx";
 
 /** App-Kopfzeile mit Titel und Theme-Umschalter. */
 export function Header() {
     const {theme, toggleTheme} = useTheme();
-    const {user} = useAuth();
+    const {user, logout} = useAuth();
+    const navigate = useNavigate();
+
+    async function handleLogout() {
+        await logout();
+        navigate("/");
+    }
 
     return (
         <Bar>
@@ -21,7 +29,10 @@ export function Header() {
                             <span>{user.name ?? user.login}</span>
                         </UserInfo>
                     )}
-
+                    {user &&
+                        <Button $variant="secondary" $size="sm" onClick={handleLogout}>
+                            Logout
+                        </Button>}
                     <ThemeToggle
                         type="button"
                         onClick={toggleTheme}
