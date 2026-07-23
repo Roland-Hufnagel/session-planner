@@ -1,9 +1,11 @@
 import styled from "styled-components";
 import {useTheme} from "../../hooks/useTheme";
+import {useAuth} from "../../hooks/useAuth.ts";
 
 /** App-Kopfzeile mit Titel und Theme-Umschalter. */
 export function Header() {
     const {theme, toggleTheme} = useTheme();
+    const {user} = useAuth();
 
     return (
         <Bar>
@@ -12,19 +14,47 @@ export function Header() {
                     <Dot aria-hidden="true"/>
                     Session Planner
                 </Brand>
-                <ThemeToggle
-                    type="button"
-                    onClick={toggleTheme}
-                    aria-label={theme === "light" ? "Dunkles Design aktivieren" : "Helles Design aktivieren"}
-                    title={theme === "light" ? "Dunkles Design" : "Helles Design"}
-                >
-                    {theme === "light" ? "🌙" : "☀️"}
-                </ThemeToggle>
+                <Right>
+                    {user && (
+                        <UserInfo>
+                            <Avatar src={user.avatar_url} alt=""/>
+                            <span>{user.name ?? user.login}</span>
+                        </UserInfo>
+                    )}
+
+                    <ThemeToggle
+                        type="button"
+                        onClick={toggleTheme}
+                        aria-label={theme === "light" ? "Dunkles Design aktivieren" : "Helles Design aktivieren"}
+                        title={theme === "light" ? "Dunkles Design" : "Helles Design"}
+                    >
+                        {theme === "light" ? "🌙" : "☀️"}
+                    </ThemeToggle>
+                </Right>
             </Inner>
         </Bar>
     );
 }
 
+const Right = styled.div`
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+`;
+
+const UserInfo = styled.div`
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+`;
+
+const Avatar = styled.img`
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-pill);
+`;
 const Bar = styled.header`
     position: sticky;
     top: 0;
