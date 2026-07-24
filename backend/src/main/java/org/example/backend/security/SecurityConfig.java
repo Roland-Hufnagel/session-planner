@@ -25,8 +25,13 @@ public class SecurityConfig {
                         .defaultAuthenticationEntryPointFor(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                                 PathPatternRequestMatcher.withDefaults().matcher("/api/**")))
                 .logout(logout -> logout
+                        // '/api/logout' instead of 'logout' (is already in proxy)
                         .logoutUrl("/api/logout")
+                        // The default would send a 302 with redirect '/login?logout'
+                        // We don't want to redirect to another site because axios is doing the logout job
+                        // Therefore we change the logoutSuccessHandler to send a 200 Success
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                        // Deletes the cookie in the browser
                         .deleteCookies("JSESSIONID"))
                 .oauth2Login(o -> o.defaultSuccessUrl("/users", true));
 
