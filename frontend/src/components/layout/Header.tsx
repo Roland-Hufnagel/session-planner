@@ -83,8 +83,8 @@ const UserInfo = styled.div`
 `;
 
 const Avatar = styled.img`
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: var(--radius-pill);
 `;
 
