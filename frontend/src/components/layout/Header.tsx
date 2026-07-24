@@ -25,14 +25,27 @@ export function Header() {
                 <Right>
                     {user && (
                         <UserInfo>
-                            <Avatar src={user.avatar_url} alt=""/>
-                            <span>{user.name ?? user.login}</span>
+                            <Avatar src={user.avatarUrl ?? undefined} alt=""/>
+                            <UserName>{user.name ?? user.login}</UserName>
                         </UserInfo>
                     )}
                     {user &&
-                        <Button $variant="secondary" $size="sm" onClick={handleLogout}>
-                            Logout
-                        </Button>}
+                        <LogoutButton $variant="secondary" $size="sm" onClick={handleLogout} aria-label="Logout">
+                            <LogoutIcon
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </LogoutIcon>
+                            <LogoutLabel>Logout</LogoutLabel>
+                        </LogoutButton>}
                     <ThemeToggle
                         type="button"
                         onClick={toggleTheme}
@@ -47,6 +60,14 @@ export function Header() {
     );
 }
 
+/* Ab hier gilt "mobile": Logout zeigt nur noch das Icon. */
+const MOBILE_BREAKPOINT = "640px";
+
+const UserName = styled.span`
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        display: none;
+    }
+`;
 const Right = styled.div`
     display: flex;
     align-items: center;
@@ -65,6 +86,38 @@ const Avatar = styled.img`
     width: 32px;
     height: 32px;
     border-radius: var(--radius-pill);
+`;
+
+
+/* Text-Label: nur auf Desktop sichtbar. */
+const LogoutLabel = styled.span`
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        display: none;
+    }
+`;
+
+/* Icon: nur auf Mobile sichtbar. */
+const LogoutIcon = styled.svg`
+    width: 18px;
+    height: 18px;
+    display: none;
+
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        display: block;
+    }
+`;
+
+/*
+ * Logout-Button auf Theme-Toggle-Hoehe (40px) angleichen.
+ * Auf Mobile wird er quadratisch (40x40), zeigt nur das Icon.
+ */
+const LogoutButton = styled(Button)`
+    height: 40px;
+
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        width: 40px;
+        padding: 0;
+    }
 `;
 const Bar = styled.header`
     position: sticky;
