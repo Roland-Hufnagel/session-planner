@@ -1,14 +1,11 @@
 import styled from "styled-components";
+import {useSearchParams} from "react-router-dom";
 
-/**
- * Einstiegsseite des Session Planners.
- *
- * Zeigt eine Willkommens-Hero im Marken-Look mit GitHub-Login-CTA.
- * Der Login ist ein echter Link auf den Spring-OAuth2-Endpoint: Der Klick
- * ist eine reine Top-Level-Navigation, die serverseitig per 302 zu GitHub
- * weiterleitet – dafuer braucht es kein JavaScript.
- */
+
 export function LandingPage() {
+    const [searchParams] = useSearchParams();
+    const isNotRegistered = searchParams.get("error") === "not_registered";
+
     return (
         <Hero>
             <Eyebrow>neue fische · Session Planner</Eyebrow>
@@ -25,6 +22,12 @@ export function LandingPage() {
                     <GitHubMark/>
                     Login with GitHub
                 </GitHubLoginLink>
+                {isNotRegistered && (
+                    <ErrorBanner role="alert">
+                        Dein GitHub-Account ist noch nicht für den Session Planner freigeschaltet.
+                        Bitte wende dich an einen Coach.
+                    </ErrorBanner>
+                )}
             </Actions>
         </Hero>
     );
@@ -54,6 +57,15 @@ function GitHubMark() {
     );
 }
 
+const ErrorBanner = styled.div`
+    max-width: 52ch;
+    margin-top: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+    font-size: var(--text-sm);
+`;
 const Hero = styled.section`
     display: flex;
     flex-direction: column;
@@ -120,7 +132,7 @@ const GitHubLoginLink = styled.a`
     letter-spacing: 0.01em;
     box-shadow: var(--shadow-1);
     transition: background var(--transition-fast), box-shadow var(--transition-fast),
-        transform var(--transition-fast);
+    transform var(--transition-fast);
 
     &:hover {
         background: var(--color-primary-hover);

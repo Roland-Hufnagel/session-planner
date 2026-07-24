@@ -15,7 +15,7 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomOAuth2UserService customOAuth2UserService) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
@@ -33,7 +33,9 @@ public class SecurityConfig {
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
                         // Deletes the cookie in the browser
                         .deleteCookies("JSESSIONID"))
-                .oauth2Login(o -> o.defaultSuccessUrl("/users", true));
+                .oauth2Login(o -> o.defaultSuccessUrl("/users", true)
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .failureUrl("/?error=not_registered"));
 
         return http.build();
     }
