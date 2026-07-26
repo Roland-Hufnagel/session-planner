@@ -1,10 +1,16 @@
 import styled from "styled-components";
-import {useSearchParams} from "react-router-dom";
+import {Navigate, useSearchParams} from "react-router-dom";
+import {useAuth} from "../hooks/useAuth.ts";
 
 
 export function LandingPage() {
     const [searchParams] = useSearchParams();
     const isNotRegistered = searchParams.get("error") === "not_registered";
+    const {user, isLoading} = useAuth();
+
+    if (isLoading) return null;
+    if (user) return <Navigate to={"/users"} replace/>;
+
 
     return (
         <Hero>

@@ -4,6 +4,7 @@ import {LandingPage} from "./pages/LandingPage.tsx";
 import {UsersPage} from "./pages/UsersPage";
 import {UserDetailPage} from "./pages/UserDetailPage";
 import {ProtectedRoute} from "./components/auth/ProtectedRoute.tsx";
+import {NotFoundPage} from "./pages/NotFoundPage";
 
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
                         <Route path="/users" element={<UsersPage/>}/>
                         <Route path="/users/:id" element={<UserDetailPage/>}/>
                     </Route>
-
+                    <Route path="*" element={<NotFoundPage/>}/>
                 </Routes>
             </Layout>
         </BrowserRouter>
