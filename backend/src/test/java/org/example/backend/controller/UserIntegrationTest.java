@@ -17,7 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,7 +51,7 @@ class UserIntegrationTest {
                   "githubName":"peterk","email":"peterk@neuefische.de","avatarUrl":null }
                 """;
 
-        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/users").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated());
 
         assertThat(userRepository.findByGithubName("peterk")).isPresent();
@@ -82,7 +82,7 @@ class UserIntegrationTest {
                   "githubName":"annan","email":"peterk@neuefische.de","avatarUrl":null }
                 """;   // gleiche Email, anderer githubName
 
-        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/users").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isConflict());
     }
 
