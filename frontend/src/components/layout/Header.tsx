@@ -60,7 +60,6 @@ export function Header() {
     );
 }
 
-/* Ab hier gilt "mobile": Logout zeigt nur noch das Icon. */
 const MOBILE_BREAKPOINT = "640px";
 
 const UserName = styled.span`
@@ -89,14 +88,12 @@ const Avatar = styled.img`
 `;
 
 
-/* Text-Label: nur auf Desktop sichtbar. */
 const LogoutLabel = styled.span`
     @media (max-width: ${MOBILE_BREAKPOINT}) {
         display: none;
     }
 `;
 
-/* Icon: nur auf Mobile sichtbar. */
 const LogoutIcon = styled.svg`
     width: 18px;
     height: 18px;
@@ -107,10 +104,7 @@ const LogoutIcon = styled.svg`
     }
 `;
 
-/*
- * Logout-Button auf Theme-Toggle-Hoehe (40px) angleichen.
- * Auf Mobile wird er quadratisch (40x40), zeigt nur das Icon.
- */
+
 const LogoutButton = styled(Button)`
     height: 40px;
 

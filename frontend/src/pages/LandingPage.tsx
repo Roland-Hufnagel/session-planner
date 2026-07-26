@@ -118,11 +118,6 @@ const Actions = styled.div`
     margin-top: var(--space-3);
 `;
 
-/**
- * Login-Link im Look des Primary-Buttons.
- * Bewusst ein <a> statt <button>: Middle-Click / "in neuem Tab oeffnen" und
- * das native Navigationsverhalten bleiben erhalten, ganz ohne onClick-Handler.
- */
 const GitHubLoginLink = styled.a`
     display: inline-flex;
     align-items: center;

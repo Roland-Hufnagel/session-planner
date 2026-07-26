@@ -1,10 +1,6 @@
 import styled from "styled-components";
 import {Link} from "react-router-dom";
 
-/**
- * Fallback für alle Pfade, die keine Route trifft (`path="*"` in App.tsx).
- * Ohne diese Route würde <Routes> nichts rendern und nur der Header stehen bleiben.
- */
 export function NotFoundPage() {
     return (
         <Wrapper>
@@ -54,7 +50,6 @@ const Subline = styled.p`
     line-height: 1.5;
 `;
 
-/** Sekundärer Button-Look – die 404 ist kein Call-to-Action. */
 const HomeLink = styled(Link)`
     display: inline-flex;
     align-items: center;

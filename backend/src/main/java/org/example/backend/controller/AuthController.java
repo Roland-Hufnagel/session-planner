@@ -14,9 +14,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public MeResponseDto getMe(@AuthenticationPrincipal OAuth2AuthenticatedPrincipal principal) {
-        // Wir wollen in der FilterChain '/api/auth/me' auf permitAll setzen,
-        // damit der Endpunkt IMMER erreichbar ist, auch für ausgeloggte User.
-        // In dem Fall wäre das Principal null
+
         if (principal == null) {
             return null;
         }
