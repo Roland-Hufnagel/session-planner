@@ -43,6 +43,20 @@ class UserIntegrationTest {
         userRepository.deleteAll(); // Each test starts with empty DB
     }
 
+
+    @Test
+    void createUser_returns403_whenCsrfTokenIsMissing() throws Exception {
+        String body = """
+                { "name":"Peter Klein","nickname":"Peter K.","role":"ADMIN",
+                  "githubName":"peterk","email":"peterk@neuefische.de","avatarUrl":null }
+                """;
+
+        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+
+        assertThat(userRepository.findByGithubName("peterk")).isEmpty();
+    }
+    
     // Create-Pfad → bewusst über die echte API (save() umginge die Schreib-Schicht)
     @Test
     void createUser_persistsInDb() throws Exception {
