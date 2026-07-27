@@ -1,9 +1,19 @@
 import styled from "styled-components";
 import {useTheme} from "../../hooks/useTheme";
+import {useAuth} from "../../hooks/useAuth.ts";
+import {useNavigate} from "react-router-dom";
+import {Button} from "../ui/Button.tsx";
 
 /** App-Kopfzeile mit Titel und Theme-Umschalter. */
 export function Header() {
     const {theme, toggleTheme} = useTheme();
+    const {user, logout} = useAuth();
+    const navigate = useNavigate();
+
+    async function handleLogout() {
+        await logout();
+        navigate("/");
+    }
 
     return (
         <Bar>
@@ -12,19 +22,97 @@ export function Header() {
                     <Dot aria-hidden="true"/>
                     Session Planner
                 </Brand>
-                <ThemeToggle
-                    type="button"
-                    onClick={toggleTheme}
-                    aria-label={theme === "light" ? "Dunkles Design aktivieren" : "Helles Design aktivieren"}
-                    title={theme === "light" ? "Dunkles Design" : "Helles Design"}
-                >
-                    {theme === "light" ? "🌙" : "☀️"}
-                </ThemeToggle>
+                <Right>
+                    {user && (
+                        <UserInfo>
+                            <Avatar src={user.avatarUrl ?? undefined} alt=""/>
+                            <UserName>{user.name ?? user.login}</UserName>
+                        </UserInfo>
+                    )}
+                    {user &&
+                        <LogoutButton $variant="secondary" $size="sm" onClick={handleLogout} aria-label="Logout">
+                            <LogoutIcon
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </LogoutIcon>
+                            <LogoutLabel>Logout</LogoutLabel>
+                        </LogoutButton>}
+                    <ThemeToggle
+                        type="button"
+                        onClick={toggleTheme}
+                        aria-label={theme === "light" ? "Dunkles Design aktivieren" : "Helles Design aktivieren"}
+                        title={theme === "light" ? "Dunkles Design" : "Helles Design"}
+                    >
+                        {theme === "light" ? "🌙" : "☀️"}
+                    </ThemeToggle>
+                </Right>
             </Inner>
         </Bar>
     );
 }
 
+const MOBILE_BREAKPOINT = "640px";
+
+const UserName = styled.span`
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        display: none;
+    }
+`;
+const Right = styled.div`
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+`;
+
+const UserInfo = styled.div`
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+`;
+
+const Avatar = styled.img`
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+`;
+
+
+const LogoutLabel = styled.span`
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        display: none;
+    }
+`;
+
+const LogoutIcon = styled.svg`
+    width: 18px;
+    height: 18px;
+    display: none;
+
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        display: block;
+    }
+`;
+
+
+const LogoutButton = styled(Button)`
+    height: 40px;
+
+    @media (max-width: ${MOBILE_BREAKPOINT}) {
+        width: 40px;
+        padding: 0;
+    }
+`;
 const Bar = styled.header`
     position: sticky;
     top: 0;

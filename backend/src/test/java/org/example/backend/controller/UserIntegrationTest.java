@@ -10,12 +10,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
+@WithMockUser
 class UserIntegrationTest {
     @Container
     @ServiceConnection
@@ -40,6 +43,20 @@ class UserIntegrationTest {
         userRepository.deleteAll(); // Each test starts with empty DB
     }
 
+
+    @Test
+    void createUser_returns403_whenCsrfTokenIsMissing() throws Exception {
+        String body = """
+                { "name":"Peter Klein","nickname":"Peter K.","role":"ADMIN",
+                  "githubName":"peterk","email":"peterk@neuefische.de","avatarUrl":null }
+                """;
+
+        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+
+        assertThat(userRepository.findByGithubName("peterk")).isEmpty();
+    }
+    
     // Create-Pfad → bewusst über die echte API (save() umginge die Schreib-Schicht)
     @Test
     void createUser_persistsInDb() throws Exception {
@@ -48,7 +65,7 @@ class UserIntegrationTest {
                   "githubName":"peterk","email":"peterk@neuefische.de","avatarUrl":null }
                 """;
 
-        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/users").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated());
 
         assertThat(userRepository.findByGithubName("peterk")).isPresent();
@@ -79,7 +96,7 @@ class UserIntegrationTest {
                   "githubName":"annan","email":"peterk@neuefische.de","avatarUrl":null }
                 """;   // gleiche Email, anderer githubName
 
-        mockMvc.perform(post("/api/users").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/users").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isConflict());
     }
 

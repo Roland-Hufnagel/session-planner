@@ -1,7 +1,10 @@
-import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {Layout} from "./components/layout/Layout";
+import {LandingPage} from "./pages/LandingPage.tsx";
 import {UsersPage} from "./pages/UsersPage";
 import {UserDetailPage} from "./pages/UserDetailPage";
+import {ProtectedRoute} from "./components/auth/ProtectedRoute.tsx";
+import {NotFoundPage} from "./pages/NotFoundPage";
 
 
 function App() {
@@ -9,9 +12,12 @@ function App() {
         <BrowserRouter>
             <Layout>
                 <Routes>
-                    <Route path="/users" element={<UsersPage/>}/>
-                    <Route path="/users/:id" element={<UserDetailPage/>}/>
-                    <Route path="*" element={<Navigate to="/users" replace/>}/>
+                    <Route path={"/"} element={<LandingPage/>}/>
+                    <Route element={<ProtectedRoute/>}>
+                        <Route path="/users" element={<UsersPage/>}/>
+                        <Route path="/users/:id" element={<UserDetailPage/>}/>
+                    </Route>
+                    <Route path="*" element={<NotFoundPage/>}/>
                 </Routes>
             </Layout>
         </BrowserRouter>
