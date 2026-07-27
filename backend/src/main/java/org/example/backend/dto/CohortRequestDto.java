@@ -12,9 +12,9 @@ public record CohortRequestDto(
         @NotBlank
         String name,
         String nickname,
-        @NotBlank
+        @NotNull
         LocalDate startDate,
-        @NotBlank
+        @NotNull
         LocalDate endDate,
         @NotNull
         FederalState federalState,
