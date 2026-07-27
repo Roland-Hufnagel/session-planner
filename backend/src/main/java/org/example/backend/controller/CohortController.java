@@ -3,8 +3,6 @@ package org.example.backend.controller;
 import jakarta.validation.Valid;
 import org.example.backend.dto.CohortRequestDto;
 import org.example.backend.dto.CohortResponseDto;
-import org.example.backend.dto.UserRequestDto;
-import org.example.backend.dto.UserResponseDto;
 import org.example.backend.service.CohortService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;

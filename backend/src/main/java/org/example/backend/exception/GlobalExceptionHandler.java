@@ -2,7 +2,6 @@ package org.example.backend.exception;
 
 import org.example.backend.dto.ApiError;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.NullMarked;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -48,7 +47,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
     }
-    
+
     @Override
     protected ResponseEntity<@NonNull Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
