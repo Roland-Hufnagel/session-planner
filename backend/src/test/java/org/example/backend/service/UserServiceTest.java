@@ -2,8 +2,8 @@ package org.example.backend.service;
 
 import org.example.backend.dto.UserRequestDto;
 import org.example.backend.dto.UserResponseDto;
-import org.example.backend.exception.DuplicateUserException;
-import org.example.backend.exception.UserNotFoundException;
+import org.example.backend.exception.DuplicateResourceException;
+import org.example.backend.exception.ResourceNotFoundException;
 import org.example.backend.model.Role;
 import org.example.backend.model.User;
 import org.example.backend.repository.UserRepository;
@@ -73,7 +73,7 @@ class UserServiceTest {
         // the repo does not throw an exception. It only returns an empty Optional
         when(mockRepo.findById(id)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> userService.findUserById(id))
-                .isInstanceOf(UserNotFoundException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining(id.toString());
     }
 
@@ -106,7 +106,7 @@ class UserServiceTest {
         when(mockRepo.existsByEmail(requestDTO.email())).thenReturn(true); // mocks that the email is already used
 
         assertThatThrownBy(() -> userService.createUser(requestDTO))
-                .isInstanceOf(DuplicateUserException.class)
+                .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining(requestDTO.email());
         verify(mockRepo, never()).save(any()); // verify 'save' was never called (@Transactional)
     }
@@ -120,7 +120,7 @@ class UserServiceTest {
         when(mockRepo.existsByGithubName(requestDTO.githubName())).thenReturn(true); // mocks that the githubName is already used
 
         assertThatThrownBy(() -> userService.createUser(requestDTO))
-                .isInstanceOf(DuplicateUserException.class)
+                .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining(requestDTO.githubName());
 
         verify(mockRepo, never()).save(any());
@@ -157,7 +157,7 @@ class UserServiceTest {
         when(mockRepo.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updateUser(id, requestDTO))
-                .isInstanceOf(UserNotFoundException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining(id.toString());
 
         verify(mockRepo, never()).save(any());
@@ -178,7 +178,7 @@ class UserServiceTest {
         when(mockRepo.existsByEmailAndIdNot(request.email(), id)).thenReturn(true); // mocks that the email already exists
 
         assertThatThrownBy(() -> userService.updateUser(id, request))
-                .isInstanceOf(DuplicateUserException.class)
+                .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining(request.email());
 
         verify(mockRepo, never()).save(any());
@@ -201,7 +201,7 @@ class UserServiceTest {
         when(mockRepo.existsById(id)).thenReturn(false);
 
         assertThatThrownBy(() -> userService.deleteUserById(id))
-                .isInstanceOf(UserNotFoundException.class)
+                .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining(id.toString());
 
         verify(mockRepo, never()).deleteById(any(UUID.class)); // verify deleteById was never called

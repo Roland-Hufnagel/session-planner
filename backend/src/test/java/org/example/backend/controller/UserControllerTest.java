@@ -2,8 +2,8 @@ package org.example.backend.controller;
 
 import org.example.backend.dto.UserRequestDto;
 import org.example.backend.dto.UserResponseDto;
-import org.example.backend.exception.DuplicateUserException;
-import org.example.backend.exception.UserNotFoundException;
+import org.example.backend.exception.DuplicateResourceException;
+import org.example.backend.exception.ResourceNotFoundException;
 import org.example.backend.model.Role;
 import org.example.backend.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,7 @@ class UserControllerTest {
     void findUserById_returns404_whenUserDoesNotExist() throws Exception {
         UUID id = UUID.randomUUID();
         when(mockUserService.findUserById(id))
-                .thenThrow(new UserNotFoundException(
+                .thenThrow(new ResourceNotFoundException(
                         "No user found with id: " + id));
 
         mockMvc.perform(get("/api/users/{id}", id))
@@ -137,7 +137,7 @@ class UserControllerTest {
     @Test
     void createUser_returns409_whenEmailAlreadyExists() throws Exception {
         when(mockUserService.createUser(any(UserRequestDto.class)))
-                .thenThrow(new DuplicateUserException("Email already exists: peterk@neuefische.de"));
+                .thenThrow(new DuplicateResourceException("Email already exists: peterk@neuefische.de"));
 
         String requestBody = """
                 {
@@ -208,7 +208,7 @@ class UserControllerTest {
     void updateUser_returns404_whenUserDoesNotExist() throws Exception {
         UUID id = UUID.randomUUID();
         when(mockUserService.updateUser(eq(id), any(UserRequestDto.class)))
-                .thenThrow(new UserNotFoundException(
+                .thenThrow(new ResourceNotFoundException(
                         "No user found with id: " + id));
 
         String requestBody = """
@@ -231,7 +231,7 @@ class UserControllerTest {
     void updateUser_returns409_whenEmailBelongsToAnotherUser() throws Exception {
         UUID id = UUID.randomUUID();
         when(mockUserService.updateUser(eq(id), any(UserRequestDto.class)))
-                .thenThrow(new DuplicateUserException("Email already exists: peterk@neuefische.de"));
+                .thenThrow(new DuplicateResourceException("Email already exists: peterk@neuefische.de"));
 
         String requestBody = """
                 {
@@ -264,7 +264,7 @@ class UserControllerTest {
         UUID id = UUID.randomUUID();
         // since deleteUserById does not return anything you can not use 'when(...)'
         // instead use it the other way round:
-        doThrow(new UserNotFoundException("No user found with id: " + id))
+        doThrow(new ResourceNotFoundException("No user found with id: " + id))
                 .when(mockUserService).deleteUserById(id);
 
         mockMvc.perform(delete("/api/users/{id}", id))
