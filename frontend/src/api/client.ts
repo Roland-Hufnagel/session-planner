@@ -12,3 +12,7 @@ import axios from "axios";
 export const api = axios.create({
   timeout: 10_000,
 });
+
+/** Generischer SWR-Fetcher (GET → data). Fuer alle Ressourcen gleich. */
+export const fetcher = <T>(url: string): Promise<T> =>
+  api.get<T>(url).then((res) => res.data);
