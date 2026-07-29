@@ -14,6 +14,7 @@ import {
 import {getErrorMessage, getValidationErrors} from "../../api/errors";
 import {Button} from "../ui/Button";
 import {ColorInput, Field, Input, Select} from "../ui/Field";
+import {Form, FormError, Actions} from "../ui/FormLayout.ts";
 
 type CohortFormProps = {
     /** Vorhandene Cohort beim Bearbeiten; undefined beim Anlegen. */
@@ -187,11 +188,6 @@ export function CohortForm({initial, onSubmit, onCancel}: Readonly<CohortFormPro
     );
 }
 
-const Form = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-`;
 
 /** Zwei zusammengehoerende Felder in einer Reihe – auf Mobil untereinander. */
 const TwoColumns = styled.div`
@@ -215,17 +211,3 @@ const ColorCode = styled.span`
     font-size: var(--text-sm);
 `;
 
-const FormError = styled.div`
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-    font-size: var(--text-sm);
-`;
-
-const Actions = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-`;

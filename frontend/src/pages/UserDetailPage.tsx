@@ -1,6 +1,5 @@
 import {useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
-import styled from "styled-components";
 import {useUsers} from "../hooks/useUsers";
 import {getErrorMessage} from "../api/errors";
 import type {UserInput} from "../types/user";
@@ -10,6 +9,22 @@ import {ConfirmDialog} from "../components/ui/ConfirmDialog";
 import {UserAvatar} from "../components/users/UserAvatar";
 import {RoleBadge} from "../components/users/RoleBadge";
 import {UserForm} from "../components/users/UserForm";
+import {
+    BackLink,
+    Card,
+    CardHeader,
+    Identity,
+    Name,
+    Nickname,
+    Details,
+    DetailRow,
+    Dt,
+    Dd,
+    Muted,
+    CardActions,
+    NotFound
+} from "../components/ui/DetailCart.ts";
+import {Info, ErrorBox} from "../components/ui/PageState.ts";
 
 /** Detailseite eines Users: zeigt die Daten und bietet Bearbeiten/Löschen. */
 export function UserDetailPage() {
@@ -79,26 +94,26 @@ export function UserDetailPage() {
                 </CardHeader>
 
                 <Details>
-                    <Row>
+                    <DetailRow>
                         <Dt>GitHub</Dt>
                         <Dd>{user.githubName}</Dd>
-                    </Row>
-                    <Row>
+                    </DetailRow>
+                    <DetailRow>
                         <Dt>Email</Dt>
                         <Dd>{user.email}</Dd>
-                    </Row>
-                    <Row>
+                    </DetailRow>
+                    <DetailRow>
                         <Dt>Avatar URL</Dt>
                         <Dd>{user.avatarUrl || <Muted>—</Muted>}</Dd>
-                    </Row>
+                    </DetailRow>
                 </Details>
 
-                <Actions>
+                <CardActions>
                     <Button onClick={() => setEditOpen(true)}>Edit</Button>
                     <Button $variant="danger-outline" onClick={() => setDeleteOpen(true)}>
                         Delete
                     </Button>
-                </Actions>
+                </CardActions>
             </Card>
 
             <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit user">
@@ -117,104 +132,3 @@ export function UserDetailPage() {
         </>
     );
 }
-
-const BackLink = styled(Link)`
-    display: inline-block;
-    margin-bottom: var(--space-4);
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-
-    &:hover {
-        color: var(--color-text);
-    }
-`;
-
-const Card = styled.div`
-    max-width: 640px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-1);
-    overflow: hidden;
-`;
-
-const CardHeader = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
-    padding: var(--space-5);
-    border-bottom: 1px solid var(--color-border);
-`;
-
-const Identity = styled.div`
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-`;
-
-const Name = styled.h1`
-    font-size: var(--text-xl);
-`;
-
-const Nickname = styled.div`
-    color: var(--color-text-secondary);
-`;
-
-const Details = styled.dl`
-    padding: var(--space-2) var(--space-5);
-`;
-
-const Row = styled.div`
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: var(--space-3);
-    padding: var(--space-3) 0;
-    border-bottom: 1px solid var(--color-border);
-
-    &:last-child {
-        border-bottom: none;
-    }
-`;
-
-const Dt = styled.dt`
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-`;
-
-const Dd = styled.dd`
-    word-break: break-word;
-`;
-
-const Muted = styled.span`
-    color: var(--color-text-muted);
-`;
-
-const Actions = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    padding: var(--space-4) var(--space-5) var(--space-5);
-`;
-
-const Info = styled.p`
-    color: var(--color-text-secondary);
-    padding: var(--space-6);
-    text-align: center;
-`;
-
-const ErrorBox = styled.div`
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-`;
-
-const NotFound = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-7) var(--space-5);
-    color: var(--color-text-secondary);
-`;

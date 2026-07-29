@@ -1,9 +1,9 @@
 import {useState, type SyntheticEvent} from "react";
-import styled from "styled-components";
 import {ROLES, toUserInput, type Role, type User, type UserInput} from "../../types/user";
 import {getErrorMessage, getValidationErrors} from "../../api/errors";
 import {Button} from "../ui/Button";
 import {Field, Input, Select} from "../ui/Field";
+import {Form, FormError, Actions} from "../ui/FormLayout.ts";
 
 type UserFormProps = {
     /** Vorhandener User beim Bearbeiten; undefined beim Anlegen. */
@@ -144,24 +144,3 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
         </Form>
     );
 }
-
-const Form = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-`;
-
-const FormError = styled.div`
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-    font-size: var(--text-sm);
-`;
-
-const Actions = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-`;

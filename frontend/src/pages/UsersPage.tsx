@@ -1,5 +1,4 @@
 import {useState} from "react";
-import styled from "styled-components";
 import {useUsers} from "../hooks/useUsers";
 import {getErrorMessage} from "../api/errors";
 import type {UserInput} from "../types/user";
@@ -7,6 +6,7 @@ import {Button} from "../components/ui/Button";
 import {Modal} from "../components/ui/Modal";
 import {UserTable} from "../components/users/UserTable";
 import {UserForm} from "../components/users/UserForm";
+import {Toolbar, Title, Count, Info, ErrorBox, Empty} from "../components/ui/PageState.ts";
 
 export function UsersPage() {
     const {users, error, isLoading, addUser} = useUsers();
@@ -50,44 +50,3 @@ export function UsersPage() {
         </>
     );
 }
-
-const Toolbar = styled.div`
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-bottom: var(--space-5);
-`;
-
-const Title = styled.h1`
-    font-size: var(--text-2xl);
-`;
-
-const Count = styled.span`
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-`;
-
-const Info = styled.p`
-    color: var(--color-text-secondary);
-    padding: var(--space-6);
-    text-align: center;
-`;
-
-const ErrorBox = styled.div`
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-`;
-
-const Empty = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-7) var(--space-5);
-    border: 1px dashed var(--color-border-strong);
-    border-radius: var(--radius-lg);
-    color: var(--color-text-secondary);
-`;

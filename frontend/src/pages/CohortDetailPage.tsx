@@ -1,6 +1,5 @@
 import {useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
-import styled from "styled-components";
 import {useCohorts} from "../hooks/useCohorts";
 import {getErrorMessage} from "../api/errors";
 import {FEDERAL_STATE_LABELS, type CohortInput} from "../types/cohort";
@@ -11,6 +10,22 @@ import {ConfirmDialog} from "../components/ui/ConfirmDialog";
 import {CohortColor} from "../components/cohorts/CohortColor";
 import {DepartmentBadge} from "../components/cohorts/DepartmentBadge";
 import {CohortForm} from "../components/cohorts/CohortForm";
+import {
+    BackLink,
+    Card,
+    CardHeader,
+    Identity,
+    Name,
+    Nickname,
+    Details,
+    DetailRow,
+    Dt,
+    Dd,
+    Muted,
+    CardActions,
+    NotFound
+} from "../components/ui/DetailCart.ts";
+import {Info, ErrorBox} from "../components/ui/PageState.ts";
 
 /** Detailseite einer Cohort: zeigt die Daten und bietet Bearbeiten/Löschen. */
 export function CohortDetailPage() {
@@ -80,33 +95,33 @@ export function CohortDetailPage() {
                 </CardHeader>
 
                 <Details>
-                    <Row>
+                    <DetailRow>
                         <Dt>Period</Dt>
                         <Dd>
                             {formatIsoDate(cohort.startDate)} – {formatIsoDate(cohort.endDate)}
                         </Dd>
-                    </Row>
-                    <Row>
+                    </DetailRow>
+                    <DetailRow>
                         {/* Die Bundesland-Namen bleiben bewusst deutsch (Eigennamen). */}
                         <Dt>State</Dt>
                         <Dd lang="de">{FEDERAL_STATE_LABELS[cohort.federalState]}</Dd>
-                    </Row>
-                    <Row>
+                    </DetailRow>
+                    <DetailRow>
                         <Dt>Color</Dt>
                         <Dd>{cohort.colorCode}</Dd>
-                    </Row>
-                    <Row>
+                    </DetailRow>
+                    <DetailRow>
                         <Dt>Nickname</Dt>
                         <Dd>{cohort.nickname || <Muted>—</Muted>}</Dd>
-                    </Row>
+                    </DetailRow>
                 </Details>
 
-                <Actions>
+                <CardActions>
                     <Button onClick={() => setEditOpen(true)}>Edit</Button>
                     <Button $variant="danger-outline" onClick={() => setDeleteOpen(true)}>
                         Delete
                     </Button>
-                </Actions>
+                </CardActions>
             </Card>
 
             <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit cohort">
@@ -125,104 +140,3 @@ export function CohortDetailPage() {
         </>
     );
 }
-
-const BackLink = styled(Link)`
-    display: inline-block;
-    margin-bottom: var(--space-4);
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-
-    &:hover {
-        color: var(--color-text);
-    }
-`;
-
-const Card = styled.div`
-    max-width: 640px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-1);
-    overflow: hidden;
-`;
-
-const CardHeader = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
-    padding: var(--space-5);
-    border-bottom: 1px solid var(--color-border);
-`;
-
-const Identity = styled.div`
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-`;
-
-const Name = styled.h1`
-    font-size: var(--text-xl);
-`;
-
-const Nickname = styled.div`
-    color: var(--color-text-secondary);
-`;
-
-const Details = styled.dl`
-    padding: var(--space-2) var(--space-5);
-`;
-
-const Row = styled.div`
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: var(--space-3);
-    padding: var(--space-3) 0;
-    border-bottom: 1px solid var(--color-border);
-
-    &:last-child {
-        border-bottom: none;
-    }
-`;
-
-const Dt = styled.dt`
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-`;
-
-const Dd = styled.dd`
-    word-break: break-word;
-`;
-
-const Muted = styled.span`
-    color: var(--color-text-muted);
-`;
-
-const Actions = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    padding: var(--space-4) var(--space-5) var(--space-5);
-`;
-
-const Info = styled.p`
-    color: var(--color-text-secondary);
-    padding: var(--space-6);
-    text-align: center;
-`;
-
-const ErrorBox = styled.div`
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-`;
-
-const NotFound = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-7) var(--space-5);
-    color: var(--color-text-secondary);
-`;
