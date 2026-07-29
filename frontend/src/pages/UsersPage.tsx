@@ -22,29 +22,29 @@ export function UsersPage() {
             <Toolbar>
                 <div>
                     <Title>Users</Title>
-                    {!isLoading && !error && <Count>{users.length} Einträge</Count>}
+                    {!isLoading && !error && <Count>{users.length} entries</Count>}
                 </div>
-                <Button onClick={() => setCreateOpen(true)}>Neuen User anlegen</Button>
+                <Button onClick={() => setCreateOpen(true)}>New user</Button>
             </Toolbar>
 
-            {isLoading && <Info>Lade Users…</Info>}
+            {isLoading && <Info>Loading users…</Info>}
 
             {error && (
                 <ErrorBox role="alert">
-                    Users konnten nicht geladen werden: {getErrorMessage(error)}
+                    Could not load users: {getErrorMessage(error)}
                 </ErrorBox>
             )}
 
             {!isLoading && !error && users.length === 0 && (
                 <Empty>
-                    <p>Noch keine Users angelegt.</p>
-                    <Button onClick={() => setCreateOpen(true)}>Ersten User anlegen</Button>
+                    <p>No users yet.</p>
+                    <Button onClick={() => setCreateOpen(true)}>Create first user</Button>
                 </Empty>
             )}
 
             {!isLoading && !error && users.length > 0 && <UserTable users={users}/>}
 
-            <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Neuen User anlegen">
+            <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="New user">
                 <UserForm onSubmit={handleCreate} onCancel={() => setCreateOpen(false)}/>
             </Modal>
         </>

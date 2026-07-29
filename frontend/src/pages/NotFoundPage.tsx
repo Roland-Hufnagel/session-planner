@@ -5,12 +5,11 @@ export function NotFoundPage() {
     return (
         <Wrapper>
             <StatusCode aria-hidden="true">404</StatusCode>
-            <Headline>Seite nicht gefunden</Headline>
+            <Headline>Page not found</Headline>
             <Subline>
-                Diese Adresse gibt es nicht – vielleicht ein Tippfehler oder ein
-                veralteter Link.
+                This address doesn't exist – maybe a typo or an outdated link.
             </Subline>
-            <HomeLink to="/">Zur Startseite</HomeLink>
+            <HomeLink to="/">Back to home</HomeLink>
         </Wrapper>
     );
 }

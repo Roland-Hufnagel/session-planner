@@ -84,7 +84,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="Rolle" error={fieldErrors.role}>
+            <Field label="Role" error={fieldErrors.role}>
                 {(props) => (
                     <Select
                         {...props}
@@ -100,7 +100,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="GitHub-Name" error={fieldErrors.githubName}>
+            <Field label="GitHub name" error={fieldErrors.githubName}>
                 {(props) => (
                     <Input
                         {...props}
@@ -110,7 +110,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="E-Mail" error={fieldErrors.email}>
+            <Field label="Email" error={fieldErrors.email}>
                 {(props) => (
                     <Input
                         {...props}
@@ -121,7 +121,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="Avatar-URL (optional)" error={fieldErrors.avatarUrl}>
+            <Field label="Avatar URL (optional)" error={fieldErrors.avatarUrl}>
                 {(props) => (
                     <Input
                         {...props}
@@ -135,10 +135,10 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
 
             <Actions>
                 <Button type="button" $variant="secondary" onClick={onCancel} disabled={submitting}>
-                    Abbrechen
+                    Cancel
                 </Button>
                 <Button type="submit" disabled={submitting}>
-                    {initial ? "Speichern" : "Anlegen"}
+                    {initial ? "Save" : "Create"}
                 </Button>
             </Actions>
         </Form>

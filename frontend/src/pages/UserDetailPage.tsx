@@ -41,12 +41,12 @@ export function UserDetailPage() {
         }
     }
 
-    if (isLoading) return <Info>Lade User…</Info>;
+    if (isLoading) return <Info>Loading user…</Info>;
 
     if (error) {
         return (
             <ErrorBox role="alert">
-                User konnte nicht geladen werden: {getErrorMessage(error)}
+                Could not load user: {getErrorMessage(error)}
             </ErrorBox>
         );
     }
@@ -54,9 +54,9 @@ export function UserDetailPage() {
     if (!user) {
         return (
             <NotFound>
-                <p>Dieser User existiert nicht (mehr).</p>
+                <p>This user no longer exists.</p>
                 <Button as={Link} to="/users">
-                    Zurück zur Übersicht
+                    Back to overview
                 </Button>
             </NotFound>
         );
@@ -64,7 +64,7 @@ export function UserDetailPage() {
 
     return (
         <>
-            <BackLink to="/users">← Zurück zur Übersicht</BackLink>
+            <BackLink to="/users">← Back to overview</BackLink>
 
             <Card>
                 <CardHeader>
@@ -84,36 +84,35 @@ export function UserDetailPage() {
                         <Dd>{user.githubName}</Dd>
                     </Row>
                     <Row>
-                        <Dt>E-Mail</Dt>
+                        <Dt>Email</Dt>
                         <Dd>{user.email}</Dd>
                     </Row>
                     <Row>
-                        <Dt>Avatar-URL</Dt>
+                        <Dt>Avatar URL</Dt>
                         <Dd>{user.avatarUrl || <Muted>—</Muted>}</Dd>
                     </Row>
                 </Details>
 
                 <Actions>
-                    <Button onClick={() => setEditOpen(true)}>Bearbeiten</Button>
+                    <Button onClick={() => setEditOpen(true)}>Edit</Button>
                     <Button $variant="danger-outline" onClick={() => setDeleteOpen(true)}>
-                        Löschen
+                        Delete
                     </Button>
                 </Actions>
             </Card>
 
-            <Modal open={editOpen} onClose={() => setEditOpen(false)} title="User bearbeiten">
+            <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit user">
                 <UserForm initial={user} onSubmit={handleEdit} onCancel={() => setEditOpen(false)}/>
             </Modal>
 
             <ConfirmDialog
                 open={deleteOpen}
-                title="User löschen"
+                title="Delete user"
                 busy={deleting}
                 onConfirm={handleDelete}
                 onCancel={() => setDeleteOpen(false)}
             >
-                Soll <strong>{user.name}</strong> wirklich gelöscht werden? Das kann nicht rückgängig
-                gemacht werden.
+                Delete <strong>{user.name}</strong>? This cannot be undone.
             </ConfirmDialog>
         </>
     );

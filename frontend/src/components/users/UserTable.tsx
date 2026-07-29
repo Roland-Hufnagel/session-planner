@@ -14,9 +14,9 @@ export function UserTable({ users }: Readonly<{ users: User[] }>) {
         <thead>
           <tr>
             <Th>User</Th>
-            <Th>Rolle</Th>
+            <Th>Role</Th>
             <Th>GitHub</Th>
-            <Th>E-Mail</Th>
+            <Th>Email</Th>
           </tr>
         </thead>
         <tbody>
@@ -27,7 +27,7 @@ export function UserTable({ users }: Readonly<{ users: User[] }>) {
               // Als Link fuer Tastatur/Screenreader bedienbar machen.
               role="link"
               tabIndex={0}
-              aria-label={`Details zu ${user.name}`}
+              aria-label={`Details for ${user.name}`}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
