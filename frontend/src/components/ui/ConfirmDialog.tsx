@@ -18,7 +18,7 @@ export function ConfirmDialog({
   open,
   title,
   children,
-  confirmLabel = "Löschen",
+  confirmLabel = "Delete",
   busy = false,
   onConfirm,
   onCancel,
@@ -28,7 +28,7 @@ export function ConfirmDialog({
       <Message>{children}</Message>
       <Actions>
         <Button $variant="secondary" onClick={onCancel} disabled={busy}>
-          Abbrechen
+          Cancel
         </Button>
         <Button $variant="danger" onClick={onConfirm} disabled={busy}>
           {busy ? "…" : confirmLabel}

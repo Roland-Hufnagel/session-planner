@@ -1,9 +1,9 @@
 import {useState, type SyntheticEvent} from "react";
-import styled from "styled-components";
 import {ROLES, toUserInput, type Role, type User, type UserInput} from "../../types/user";
 import {getErrorMessage, getValidationErrors} from "../../api/errors";
 import {Button} from "../ui/Button";
 import {Field, Input, Select} from "../ui/Field";
+import {Form, FormError, Actions} from "../ui/FormLayout.ts";
 
 type UserFormProps = {
     /** Vorhandener User beim Bearbeiten; undefined beim Anlegen. */
@@ -84,7 +84,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="Rolle" error={fieldErrors.role}>
+            <Field label="Role" error={fieldErrors.role}>
                 {(props) => (
                     <Select
                         {...props}
@@ -100,7 +100,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="GitHub-Name" error={fieldErrors.githubName}>
+            <Field label="GitHub name" error={fieldErrors.githubName}>
                 {(props) => (
                     <Input
                         {...props}
@@ -110,7 +110,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="E-Mail" error={fieldErrors.email}>
+            <Field label="Email" error={fieldErrors.email}>
                 {(props) => (
                     <Input
                         {...props}
@@ -121,7 +121,7 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
                 )}
             </Field>
 
-            <Field label="Avatar-URL (optional)" error={fieldErrors.avatarUrl}>
+            <Field label="Avatar URL (optional)" error={fieldErrors.avatarUrl}>
                 {(props) => (
                     <Input
                         {...props}
@@ -135,33 +135,12 @@ export function UserForm({initial, onSubmit, onCancel}: Readonly<UserFormProps>)
 
             <Actions>
                 <Button type="button" $variant="secondary" onClick={onCancel} disabled={submitting}>
-                    Abbrechen
+                    Cancel
                 </Button>
                 <Button type="submit" disabled={submitting}>
-                    {initial ? "Speichern" : "Anlegen"}
+                    {initial ? "Save" : "Create"}
                 </Button>
             </Actions>
         </Form>
     );
 }
-
-const Form = styled.form`
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-`;
-
-const FormError = styled.div`
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-    font-size: var(--text-sm);
-`;
-
-const Actions = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-`;
