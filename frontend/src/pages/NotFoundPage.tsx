@@ -27,7 +27,7 @@ const Wrapper = styled.section`
 
 const StatusCode = styled.p`
     margin: 0;
-    font-family: var(--font-display), sans-serif;
+    font-family: var(--font-display);
     font-size: clamp(var(--text-2xl), 12vw, 96px);
     font-weight: var(--weight-bold);
     line-height: 1;
@@ -36,7 +36,7 @@ const StatusCode = styled.p`
 
 const Headline = styled.h1`
     margin: 0;
-    font-family: var(--font-display), sans-serif;
+    font-family: var(--font-display);
     font-size: var(--text-xl);
     font-weight: var(--weight-semibold);
 `;
