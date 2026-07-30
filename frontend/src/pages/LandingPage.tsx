@@ -19,8 +19,8 @@ export function LandingPage() {
                 Welcome to <Brand>SessionPlanner</Brand>
             </Headline>
             <Subline>
-                Plane Cohorten, Shifts und Coach-Zuweisungen an einem Ort –
-                klar strukturiert und immer aktuell.
+                Plan cohorts, shifts and coach assignments in one place –
+                clearly structured and always up to date.
             </Subline>
 
             <Actions>
@@ -30,8 +30,8 @@ export function LandingPage() {
                 </GitHubLoginLink>
                 {isNotRegistered && (
                     <ErrorBanner role="alert">
-                        Dein GitHub-Account ist noch nicht für den Session Planner freigeschaltet.
-                        Bitte wende dich an einen Coach.
+                        Your GitHub account isn't enabled for Session Planner yet.
+                        Please contact a coach.
                     </ErrorBanner>
                 )}
             </Actions>

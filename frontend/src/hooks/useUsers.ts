@@ -1,5 +1,6 @@
 import useSWR from "swr";
-import {createUser, deleteUser, fetcher, updateUser, USERS_ENDPOINT} from "../api/users";
+import {fetcher} from "../api/client";
+import {createUser, deleteUser, updateUser, USERS_ENDPOINT} from "../api/users";
 import type {User, UserInput} from "../types/user";
 
 /**

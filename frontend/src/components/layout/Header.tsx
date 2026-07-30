@@ -3,8 +3,9 @@ import {useTheme} from "../../hooks/useTheme";
 import {useAuth} from "../../hooks/useAuth.ts";
 import {useNavigate} from "react-router-dom";
 import {Button} from "../ui/Button.tsx";
+import {MainNav} from "./MainNav";
 
-/** App-Kopfzeile mit Titel und Theme-Umschalter. */
+/** App-Kopfzeile mit Titel, Navigation und Theme-Umschalter. */
 export function Header() {
     const {theme, toggleTheme} = useTheme();
     const {user, logout} = useAuth();
@@ -18,10 +19,14 @@ export function Header() {
     return (
         <Bar>
             <Inner>
-                <Brand>
-                    <Dot aria-hidden="true"/>
-                    Session Planner
-                </Brand>
+                <Left>
+                    <Brand>
+                        <Dot aria-hidden="true"/>
+                        Session Planner
+                    </Brand>
+                    {/* Navigation nur fuer Eingeloggte – die Views dahinter sind geschuetzt. */}
+                    {user && <MainNav/>}
+                </Left>
                 <Right>
                     {user && (
                         <UserInfo>
@@ -49,8 +54,8 @@ export function Header() {
                     <ThemeToggle
                         type="button"
                         onClick={toggleTheme}
-                        aria-label={theme === "light" ? "Dunkles Design aktivieren" : "Helles Design aktivieren"}
-                        title={theme === "light" ? "Dunkles Design" : "Helles Design"}
+                        aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+                        title={theme === "light" ? "Dark theme" : "Light theme"}
                     >
                         {theme === "light" ? "🌙" : "☀️"}
                     </ThemeToggle>
@@ -61,6 +66,12 @@ export function Header() {
 }
 
 const MOBILE_BREAKPOINT = "640px";
+
+const Left = styled.div`
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+`;
 
 const UserName = styled.span`
     @media (max-width: ${MOBILE_BREAKPOINT}) {
