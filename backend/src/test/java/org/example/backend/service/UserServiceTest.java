@@ -22,6 +22,16 @@ class UserServiceTest {
     private final UserRepository mockRepo = mock(UserRepository.class);
     private final UserService userService = new UserService(mockRepo);
 
+    /** Ein aktiver User mit vorgegebener id – fuer die Konflikt-Tests. */
+    private static User activeUserWithId(UUID id) {
+        return User.builder()
+                .id(id)
+                .name("Peter Klein").nickname("Peter K.").role(Role.ADMIN)
+                .githubName("peterk").email("peterk@neuefische.de")
+                .active(true)
+                .build();
+    }
+
     // ----- findAllUsers -----
     @Test
     void findAllUsers_returnsListOfDTOs() {
@@ -82,7 +92,7 @@ class UserServiceTest {
     void createUser_savesAndReturnsDto() {
         UserRequestDto requestDTO = new UserRequestDto(
                 "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         User savedUser = User.builder()
                 .id(UUID.randomUUID())
                 .name(requestDTO.name()).nickname(requestDTO.nickname()).role(requestDTO.role())
@@ -102,8 +112,11 @@ class UserServiceTest {
     void createUser_throwsConflict_whenEmailExists() {
         UserRequestDto requestDTO = new UserRequestDto(
                 "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
-        when(mockRepo.existsByEmail(requestDTO.email())).thenReturn(true); // mocks that the email is already used
+                "peterk", "peterk@neuefische.de", null, true);
+        // Der Service laedt den Datensatz (statt nur existsBy...), um in der
+        // Meldung zwischen aktiv und deaktiviert unterscheiden zu koennen.
+        when(mockRepo.findByEmail(requestDTO.email()))
+                .thenReturn(Optional.of(activeUserWithId(UUID.randomUUID())));
 
         assertThatThrownBy(() -> userService.createUser(requestDTO))
                 .isInstanceOf(DuplicateResourceException.class)
@@ -112,12 +125,30 @@ class UserServiceTest {
     }
 
     @Test
+    void createUser_throwsConflict_whenEmailBelongsToDeactivatedUser() {
+        UserRequestDto requestDTO = new UserRequestDto(
+                "Peter Klein", "Peter K.", Role.ADMIN,
+                "peterk", "peterk@neuefische.de", null, true);
+        User deactivatedUser = activeUserWithId(UUID.randomUUID());
+        deactivatedUser.setActive(false);
+        when(mockRepo.findByEmail(requestDTO.email())).thenReturn(Optional.of(deactivatedUser));
+
+        // Die unique-Spalte bleibt belegt, obwohl der User in der UI nicht mehr
+        // auftaucht -> die Meldung muss das erklaeren.
+        assertThatThrownBy(() -> userService.createUser(requestDTO))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("deactivated");
+        verify(mockRepo, never()).save(any());
+    }
+
+    @Test
     void createUser_throwsConflict_whenGithubNameExists() {
         UserRequestDto requestDTO = new UserRequestDto(
                 "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
-        when(mockRepo.existsByEmail(requestDTO.email())).thenReturn(false); // mocks that the email is 'free'
-        when(mockRepo.existsByGithubName(requestDTO.githubName())).thenReturn(true); // mocks that the githubName is already used
+                "peterk", "peterk@neuefische.de", null, true);
+        // findByEmail liefert per Mockito-Default Optional.empty() -> Email ist frei
+        when(mockRepo.findByGithubName(requestDTO.githubName()))
+                .thenReturn(Optional.of(activeUserWithId(UUID.randomUUID())));
 
         assertThatThrownBy(() -> userService.createUser(requestDTO))
                 .isInstanceOf(DuplicateResourceException.class)
@@ -137,7 +168,7 @@ class UserServiceTest {
                 .build();
         UserRequestDto requestDTO = new UserRequestDto(
                 "Peter Klein", "Pete", Role.COACH, // nickname and role changed
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         when(mockRepo.findById(id)).thenReturn(Optional.of(existingUser));
         when(mockRepo.save(any(User.class))).thenReturn(existingUser);
 
@@ -153,7 +184,7 @@ class UserServiceTest {
         UUID id = UUID.randomUUID();
         UserRequestDto requestDTO = new UserRequestDto(
                 "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         when(mockRepo.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.updateUser(id, requestDTO))
@@ -173,9 +204,11 @@ class UserServiceTest {
                 .build();
         UserRequestDto request = new UserRequestDto(
                 "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         when(mockRepo.findById(id)).thenReturn(Optional.of(existing));
-        when(mockRepo.existsByEmailAndIdNot(request.email(), id)).thenReturn(true); // mocks that the email already exists
+        // Die Email gehoert einem ANDEREN User (andere id) -> Konflikt
+        when(mockRepo.findByEmail(request.email()))
+                .thenReturn(Optional.of(activeUserWithId(UUID.randomUUID())));
 
         assertThatThrownBy(() -> userService.updateUser(id, request))
                 .isInstanceOf(DuplicateResourceException.class)
@@ -184,27 +217,39 @@ class UserServiceTest {
         verify(mockRepo, never()).save(any());
     }
 
-    // ----- deleteUser -----
+    // ----- deleteUser (Soft Delete) -----
     @Test
-    void deleteUserById_deletes_whenUserExists() {
+    void deleteUserById_deactivatesUser_whenUserExists() {
         UUID id = UUID.randomUUID();
-        when(mockRepo.existsById(id)).thenReturn(true); // mocks that the user exists
+        User user = User.builder()
+                .id(id)
+                .name("Peter Klein").nickname("Peter K.").role(Role.COACH)
+                .githubName("peterk").email("peterk@neuefische.de")
+                .active(true)
+                .build();
+        when(mockRepo.findById(id)).thenReturn(Optional.of(user));
+        when(mockRepo.save(any(User.class))).thenReturn(user);
 
         userService.deleteUserById(id);
 
-        verify(mockRepo).deleteById(id); // verify deleteById(id) was called
+        // Soft Delete: Der Datensatz bleibt, nur das Flag kippt – so behalten
+        // die alten Shifts ihre Coach-Zuordnung.
+        assertThat(user.isActive()).isFalse();
+        verify(mockRepo).save(user);
+        verify(mockRepo, never()).deleteById(any(UUID.class));
     }
 
     @Test
     void deleteUserById_throwsNotFound_whenUserDoesNotExist() {
         UUID id = UUID.randomUUID();
-        when(mockRepo.existsById(id)).thenReturn(false);
+        when(mockRepo.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> userService.deleteUserById(id))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining(id.toString());
 
-        verify(mockRepo, never()).deleteById(any(UUID.class)); // verify deleteById was never called
+        verify(mockRepo, never()).save(any());
+        verify(mockRepo, never()).deleteById(any(UUID.class));
     }
 
 }
