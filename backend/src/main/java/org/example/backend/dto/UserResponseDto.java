@@ -13,7 +13,9 @@ public record UserResponseDto(
         Role role,
         String githubName,
         String email,
-        String avatarUrl
+        String avatarUrl,
+        // Soft Delete: false = ausgeschieden, kann sich nicht mehr einloggen
+        boolean active
 ) {
     public static UserResponseDto from(User u) {
         return new UserResponseDto(u.getId(),
@@ -22,6 +24,7 @@ public record UserResponseDto(
                 u.getRole(),
                 u.getGithubName(),
                 u.getEmail(),
-                u.getAvatarUrl());
+                u.getAvatarUrl(),
+                u.isActive());
     }
 }
