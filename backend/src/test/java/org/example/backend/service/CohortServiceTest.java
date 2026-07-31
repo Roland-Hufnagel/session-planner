@@ -8,6 +8,7 @@ import org.example.backend.model.Cohort;
 import org.example.backend.model.Department;
 import org.example.backend.model.FederalState;
 import org.example.backend.repository.CohortRepository;
+import org.example.backend.repository.ShiftRepository;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -23,7 +24,9 @@ import static org.mockito.Mockito.*;
 class CohortServiceTest {
 
     private final CohortRepository mockRepo = mock(CohortRepository.class);
-    private final CohortService cohortService = new CohortService(mockRepo);
+    // Cohorten loeschen nimmt die zugehoerigen Shifts mit -> ShiftRepository noetig
+    private final ShiftRepository mockShiftRepo = mock(ShiftRepository.class);
+    private final CohortService cohortService = new CohortService(mockRepo, mockShiftRepo);
 
     private static final LocalDate START = LocalDate.of(2025, Month.SEPTEMBER, 1);
     private static final LocalDate END = LocalDate.of(2026, Month.FEBRUARY, 27);
