@@ -125,6 +125,59 @@ class ShiftServiceTest {
         verify(mockShiftRepo, never()).findByDateBetweenOrderByDateAscStartTimeAsc(any(), any());
     }
 
+    // ----- findShiftsOfCohort -----
+    @Test
+    void findShiftsOfCohort_returnsListOfDTOs() {
+        UUID cohortId = UUID.randomUUID();
+        Shift shift = shift(UUID.randomUUID(), coach(UUID.randomUUID()), cohort(cohortId));
+        when(mockCohortRepo.existsById(cohortId)).thenReturn(true);
+        when(mockShiftRepo.findByCohortIdOrderByDateAscStartTimeAsc(cohortId))
+                .thenReturn(List.of(shift));
+
+        List<ShiftResponseDto> result = shiftService.findShiftsOfCohort(cohortId);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().cohort().id()).isEqualTo(cohortId);
+    }
+
+    @Test
+    void findShiftsOfCohort_returnsEmptyList_whenCohortHasNoShifts() {
+        UUID cohortId = UUID.randomUUID();
+        when(mockCohortRepo.existsById(cohortId)).thenReturn(true);
+        when(mockShiftRepo.findByCohortIdOrderByDateAscStartTimeAsc(cohortId))
+                .thenReturn(List.of());
+
+        // Eine Cohorte ohne Shifts ist kein Fehler
+        assertThat(shiftService.findShiftsOfCohort(cohortId)).isEmpty();
+    }
+
+    @Test
+    void findShiftsOfCohort_throwsNotFound_whenCohortDoesNotExist() {
+        UUID cohortId = UUID.randomUUID();
+        when(mockCohortRepo.existsById(cohortId)).thenReturn(false);
+
+        // Unbekannte cohortId ist ein Aufrufer-Fehler, keine leere Liste
+        assertThatThrownBy(() -> shiftService.findShiftsOfCohort(cohortId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("No cohort found with id: " + cohortId);
+
+        verify(mockShiftRepo, never()).findByCohortIdOrderByDateAscStartTimeAsc(any());
+    }
+
+    @Test
+    void findShiftsOfCohort_ignoresTheThirtyDayLimit() {
+        // Eine Cohorte laeuft ~6 Monate. Genau deshalb gibt es diesen Weg:
+        // ueber from/to waere die Abfrage an MAX_RANGE_DAYS gescheitert.
+        UUID cohortId = UUID.randomUUID();
+        when(mockCohortRepo.existsById(cohortId)).thenReturn(true);
+        when(mockShiftRepo.findByCohortIdOrderByDateAscStartTimeAsc(cohortId))
+                .thenReturn(List.of(
+                        shift(UUID.randomUUID(), null, cohort(cohortId)),
+                        shift(UUID.randomUUID(), null, cohort(cohortId))));
+
+        assertThat(shiftService.findShiftsOfCohort(cohortId)).hasSize(2);
+    }
+
     // ----- createShift -----
     @Test
     void createShift_savesAndReturnsDto() {

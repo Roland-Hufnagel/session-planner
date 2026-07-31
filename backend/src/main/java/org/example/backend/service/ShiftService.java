@@ -42,6 +42,19 @@ public class ShiftService {
                 .toList();
     }
 
+    public List<ShiftResponseDto> findShiftsOfCohort(UUID cohortId) {
+        // 404 statt leerer Liste: Eine unbekannte cohortId ist ein Fehler des
+        // Aufrufers, keine Cohorte ohne Shifts.
+        if (!cohortRepository.existsById(cohortId)) {
+            throw new ResourceNotFoundException(
+                    "No cohort found with id: " + cohortId);
+        }
+        List<Shift> shifts = shiftRepository.findByCohortIdOrderByDateAscStartTimeAsc(cohortId);
+        return shifts.stream()
+                .map(ShiftResponseDto::from)
+                .toList();
+    }
+
     @Transactional
     public ShiftResponseDto createShift(ShiftRequestDto shiftRequestDto) {
         validateTimeRange(shiftRequestDto.startTime(), shiftRequestDto.endTime());

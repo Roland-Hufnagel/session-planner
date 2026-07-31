@@ -201,6 +201,51 @@ class ShiftIntegrationTest {
                 });
     }
 
+    /**
+     * Der cohortId-Weg holt die ganze Cohort-Laufzeit, hier ueber ein halbes Jahr
+     * verteilt. Ueber from/to waere das an MAX_RANGE_DAYS = 30 gescheitert.
+     */
+    @Test
+    void findShifts_byCohortId_returnsAllShiftsRegardlessOfDate() throws Exception {
+        Cohort cohort = seedCohort();
+        Cohort otherCohort = cohortRepository.save(Cohort.builder()
+                .name("java-25-4").nickname("Die Bohnen")
+                .startDate(LocalDate.of(2026, Month.AUGUST, 3)).endDate(LocalDate.of(2027, Month.FEBRUARY, 26))
+                .federalState(FederalState.BE).department(Department.JAVA)
+                .colorCode("#0057B8")
+                .build());
+
+        shiftRepository.save(Shift.builder()
+                .title("First week").date(LocalDate.of(2026, Month.AUGUST, 5))
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(12, 30))
+                .cohort(cohort).build());
+        shiftRepository.save(Shift.builder()   // fuenf Monate spaeter
+                .title("Last week").date(LocalDate.of(2027, Month.JANUARY, 20))
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(12, 30))
+                .cohort(cohort).build());
+        shiftRepository.save(Shift.builder()   // andere Cohorte -> darf nicht auftauchen
+                .title("Other cohort").date(LocalDate.of(2026, Month.AUGUST, 6))
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(12, 30))
+                .cohort(otherCohort).build());
+
+        mockMvc.perform(get("/api/shifts").param("cohortId", cohort.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                // aufsteigend nach Datum sortiert
+                .andExpect(jsonPath("$[0].title").value("First week"))
+                .andExpect(jsonPath("$[1].title").value("Last week"));
+    }
+
+    @Test
+    void findShifts_returns400_whenNoFilterIsGiven() throws Exception {
+        seedShift(seedCoach(), seedCohort());
+
+        mockMvc.perform(get("/api/shifts"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "Provide either 'cohortId' or both 'from' and 'to'"));
+    }
+
     @Test
     void deleteShiftById_removesFromDb() throws Exception {
         Shift shift = seedShift(seedCoach(), seedCohort());

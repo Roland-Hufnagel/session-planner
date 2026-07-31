@@ -114,14 +114,69 @@ class ShiftControllerTest {
     }
 
     @Test
-    void findShiftsBetween_returns400_whenParameterIsMissing() throws Exception {
-        // 'to' fehlt -> MissingServletRequestParameterException, vom
-        // GlobalExceptionHandler bewusst ins ApiError-Format uebersetzt.
+    void findShifts_returns400_whenOnlyFromIsGiven() throws Exception {
+        // Die Route kennt zwei Abfragewege; ein halber Zeitraum ist keiner davon.
         mockMvc.perform(get("/api/shifts").param("from", "2026-08-03"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Missing required parameter: to"));
+                .andExpect(jsonPath("$.message").value(
+                        "Provide either 'cohortId' or both 'from' and 'to'"));
 
+        verify(mockShiftService, never()).findShiftsBetween(any(), any());
+        verify(mockShiftService, never()).findShiftsOfCohort(any());
+    }
+
+    @Test
+    void findShifts_returns400_whenNoParameterIsGiven() throws Exception {
+        // Ohne Filter bewusst kein Ergebnis: "alle Shifts" waechst unbegrenzt.
+        mockMvc.perform(get("/api/shifts"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "Provide either 'cohortId' or both 'from' and 'to'"));
+
+        verify(mockShiftService, never()).findShiftsBetween(any(), any());
+        verify(mockShiftService, never()).findShiftsOfCohort(any());
+    }
+
+    // ----- findShifts: der cohortId-Weg -----
+    @Test
+    void findShifts_returns200AndShiftsOfCohort() throws Exception {
+        UUID cohortId = UUID.randomUUID();
+        when(mockShiftService.findShiftsOfCohort(cohortId))
+                .thenReturn(List.of(shiftResponse(UUID.randomUUID())));
+
+        mockMvc.perform(get("/api/shifts").param("cohortId", cohortId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].title").value("Morning session"));
+
+        // Der cohortId-Weg umgeht die 30-Tage-Regel bewusst
+        verify(mockShiftService, never()).findShiftsBetween(any(), any());
+    }
+
+    @Test
+    void findShifts_returns404_whenCohortDoesNotExist() throws Exception {
+        UUID cohortId = UUID.randomUUID();
+        when(mockShiftService.findShiftsOfCohort(cohortId))
+                .thenThrow(new ResourceNotFoundException("No cohort found with id: " + cohortId));
+
+        mockMvc.perform(get("/api/shifts").param("cohortId", cohortId.toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("No cohort found with id: " + cohortId));
+    }
+
+    @Test
+    void findShifts_prefersCohortId_whenBothAreGiven() throws Exception {
+        UUID cohortId = UUID.randomUUID();
+        when(mockShiftService.findShiftsOfCohort(cohortId)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/shifts")
+                        .param("cohortId", cohortId.toString())
+                        .param("from", "2026-08-03")
+                        .param("to", "2026-08-09"))
+                .andExpect(status().isOk());
+
+        verify(mockShiftService).findShiftsOfCohort(cohortId);
         verify(mockShiftService, never()).findShiftsBetween(any(), any());
     }
 

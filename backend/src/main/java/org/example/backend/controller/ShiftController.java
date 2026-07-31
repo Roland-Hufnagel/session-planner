@@ -3,6 +3,7 @@ package org.example.backend.controller;
 import jakarta.validation.Valid;
 import org.example.backend.dto.ShiftRequestDto;
 import org.example.backend.dto.ShiftResponseDto;
+import org.example.backend.exception.MissingQueryParameterException;
 import org.example.backend.service.ShiftService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +22,19 @@ public class ShiftController {
     }
 
     @GetMapping
-    public List<ShiftResponseDto> findShiftsBetween(@RequestParam LocalDate from, @RequestParam LocalDate to) {
-        return shiftService.findShiftsBetween(from, to);
+    public List<ShiftResponseDto> findShifts(
+            @RequestParam(required = false) UUID cohortId,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to) {
+
+        if (cohortId != null) {
+            return shiftService.findShiftsOfCohort(cohortId);
+        }
+        if (from != null && to != null) {
+            return shiftService.findShiftsBetween(from, to);
+        }
+        throw new MissingQueryParameterException(
+                "Provide either 'cohortId' or both 'from' and 'to'");
     }
 
     @PostMapping

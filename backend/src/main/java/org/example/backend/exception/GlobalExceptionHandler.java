@@ -50,6 +50,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
+    @ExceptionHandler(MissingQueryParameterException.class)
+    public ResponseEntity<ApiError> handleMissingQueryParameter(MissingQueryParameterException ex) {
+        ApiError apiError = new ApiError(
+                HttpStatus.BAD_REQUEST.value(), // 400
+                ex.getMessage(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
+    }
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ApiError> handleDuplicateResource(DuplicateResourceException ex) {
         ApiError apiError = new ApiError(
