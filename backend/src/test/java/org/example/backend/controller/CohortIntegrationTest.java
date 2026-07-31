@@ -127,7 +127,6 @@ class CohortIntegrationTest {
 
     /**
      * Loeschen einer Cohort nimmt ihre Shifts mit.
-     *
      * Das ist eine reine Service-Konvention (erst shiftRepository.deleteByCohortId,
      * dann cohortRepository.deleteById) – dreht jemand die Reihenfolge oder laesst
      * die erste Zeile weg, laeuft das Loeschen in eine FK-Violation und wird zum
