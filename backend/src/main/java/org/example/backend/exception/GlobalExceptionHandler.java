@@ -2,6 +2,7 @@ package org.example.backend.exception;
 
 import org.example.backend.dto.ApiError;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -37,6 +39,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
     }
 
+    @ExceptionHandler(InvalidDateRangeException.class)
+    public ResponseEntity<ApiError> handleInvalidDateRange(InvalidDateRangeException ex) {
+        ApiError apiError = new ApiError(
+                HttpStatus.BAD_REQUEST.value(), // 400
+                ex.getMessage(),
+                Instant.now(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
+    }
+
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ApiError> handleDuplicateResource(DuplicateResourceException ex) {
         ApiError apiError = new ApiError(
@@ -47,6 +60,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
     }
+
+    @Override
+    protected @Nullable ResponseEntity<@NonNull Object> handleMissingServletRequestParameter(
+            MissingServletRequestParameterException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request) {
+        ApiError apiError = new ApiError(
+                HttpStatus.BAD_REQUEST.value(),
+                "Missing required parameter: " + ex.getParameterName(),
+                Instant.now(),
+                null
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
 
     @Override
     protected ResponseEntity<@NonNull Object> handleMethodArgumentNotValid(
