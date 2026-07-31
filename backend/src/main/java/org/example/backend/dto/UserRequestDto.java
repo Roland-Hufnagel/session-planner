@@ -19,7 +19,9 @@ public record UserRequestDto(
         @Email
         String email,
         // nullable -> no validation
-        String avatarUrl
+        String avatarUrl,
+        // nullable -> no validation
+        Boolean active
 ) {
     public User toEntity() {
         return User.builder()
@@ -29,6 +31,8 @@ public record UserRequestDto(
                 .githubName(this.githubName())
                 .email(this.email())
                 .avatarUrl(this.avatarUrl())
+                // Ohne Angabe ist ein neuer User aktiv.
+                .active(this.active() == null || this.active())
                 .build();
     }
 }

@@ -15,6 +15,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 @Service
 public class UserService {
+    private static final String NO_USER_FOUND = "No user found with id: ";
     private final UserRepository userRepository;
 
     public UserService(UserRepository userRepository) {
@@ -30,21 +31,16 @@ public class UserService {
 
     public UserResponseDto findUserById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(
-                "No user found with id: " + id));
+                NO_USER_FOUND + id));
         return UserResponseDto.from(user);
     }
 
     @Transactional
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
 
-        if (userRepository.existsByEmail(userRequestDto.email())) {
-            throw new DuplicateResourceException(
-                    "Email already exists: " + userRequestDto.email());
-        }
-        if (userRepository.existsByGithubName(userRequestDto.githubName())) {
-            throw new DuplicateResourceException("GithubName already exists: " +
-                    userRequestDto.githubName());
-        }
+        checkEmailAvailable(userRequestDto.email(), null);
+        checkGithubNameAvailable(userRequestDto.githubName(), null);
+
         User newUser = userRequestDto.toEntity();
         User savedUser = userRepository.save(newUser);
         return UserResponseDto.from(savedUser); // Return the savedUser, not the newUser!
@@ -54,16 +50,10 @@ public class UserService {
     public UserResponseDto updateUser(UUID id, UserRequestDto userRequestDto) {
         // first check existence!
         User existingUser = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(
-                "No user found with id: " + id));
+                NO_USER_FOUND + id));
         // then check duplicates:
-        if (userRepository.existsByEmailAndIdNot(userRequestDto.email(), id)) {
-            throw new DuplicateResourceException(
-                    "Email already exists: " + userRequestDto.email());
-        }
-        if (userRepository.existsByGithubNameAndIdNot(userRequestDto.githubName(), id)) {
-            throw new DuplicateResourceException("GithubName already exists: " +
-                    userRequestDto.githubName());
-        }
+        checkEmailAvailable(userRequestDto.email(), id);
+        checkGithubNameAvailable(userRequestDto.githubName(), id);
 
         existingUser.setName(userRequestDto.name());
         existingUser.setNickname(userRequestDto.nickname());
@@ -71,15 +61,50 @@ public class UserService {
         existingUser.setGithubName(userRequestDto.githubName());
         existingUser.setEmail(userRequestDto.email());
         existingUser.setAvatarUrl(userRequestDto.avatarUrl());
+        // null = nicht angegeben -> bestehenden Zustand behalten, damit ein
+        // Formular ohne active-Feld niemanden versehentlich reaktiviert.
+        if (userRequestDto.active() != null) {
+            existingUser.setActive(userRequestDto.active());
+        }
         User savedUser = userRepository.save(existingUser);
         return UserResponseDto.from(savedUser);
     }
 
     @Transactional
     public void deleteUserById(UUID id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("No user found with id: " + id);
-        }
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException(NO_USER_FOUND + id));
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    // Helper:
+
+    /**
+     * Prueft, ob die Email noch frei ist. Ein deaktivierter User belegt sie
+     * weiterhin (die Spalte ist unique), taucht aber in der UI nicht als
+     * Konflikt auf – deshalb sagt die Meldung ausdruecklich, woran es liegt.
+     *
+     * @param excludeId beim Bearbeiten die eigene id, beim Anlegen null
+     */
+    private void checkEmailAvailable(String email, UUID excludeId) {
+        userRepository.findByEmail(email)
+                .filter(existingUser -> !existingUser.getId().equals(excludeId))
+                .ifPresent(existingUser -> {
+                    throw new DuplicateResourceException(existingUser.isActive()
+                            ? "Email already exists: " + email
+                            : "Email belongs to a deactivated user: " + email);
+                });
+    }
+
+    private void checkGithubNameAvailable(String githubName, UUID excludeId) {
+        userRepository.findByGithubName(githubName)
+                .filter(existingUser -> !existingUser.getId().equals(excludeId))
+                .ifPresent(existingUser -> {
+                    throw new DuplicateResourceException(existingUser.isActive()
+                            ? "GithubName already exists: " + githubName
+                            : "GithubName belongs to a deactivated user: " +
+                              githubName);
+                });
     }
 }

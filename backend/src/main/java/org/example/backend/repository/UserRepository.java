@@ -9,12 +9,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByGithubName(String githubName);
 
-    boolean existsByGithubName(String githubName);
+    boolean existsByGithubNameAndActiveTrue(String githubName);
 
-    boolean existsByGithubNameAndIdNot(String githubName, UUID id);
-
-    boolean existsByEmail(String email);
-
-    boolean existsByEmailAndIdNot(String email, UUID id);
+    Optional<User> findByEmail(String email);
 
 }

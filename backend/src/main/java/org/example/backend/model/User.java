@@ -27,7 +27,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    // Hibernate automatically creates column name 'github_name' from field 'githubName'
     @Column(nullable = false, unique = true)
     private String githubName;
 
@@ -36,6 +35,12 @@ public class User {
 
     // Can be null -> no @Column constraints
     private String avatarUrl;
+
+    // @Builder.Default ermöglicht ein Objekt zu bauen ohne '.active' anzugeben
+    // columnDefinition setzt alte Tabelleneinträge, die noch kein 'active' besaßen auf true (wegen notNull Constraint)
+    @Builder.Default
+    @Column(columnDefinition = "boolean not null default true")
+    private boolean active = true;
 }
 
 

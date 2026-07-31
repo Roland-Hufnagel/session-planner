@@ -6,6 +6,7 @@ import org.example.backend.exception.DuplicateResourceException;
 import org.example.backend.exception.ResourceNotFoundException;
 import org.example.backend.model.Cohort;
 import org.example.backend.repository.CohortRepository;
+import org.example.backend.repository.ShiftRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,9 +16,11 @@ import java.util.UUID;
 @Service
 public class CohortService {
     private final CohortRepository cohortRepository;
+    private final ShiftRepository shiftRepository;
 
-    public CohortService(CohortRepository cohortRepository) {
+    public CohortService(CohortRepository cohortRepository, ShiftRepository shiftRepository) {
         this.cohortRepository = cohortRepository;
+        this.shiftRepository = shiftRepository;
     }
 
     public List<CohortResponseDto> findAllCohorts() {
@@ -75,6 +78,17 @@ public class CohortService {
             throw new ResourceNotFoundException(
                     "No cohort found with id: " + id);
         }
+        // Erst die abhaengigen Shifts, dann die Cohort: cohort_id ist NOT NULL,
+        // eine Shift ohne Cohort kann es nicht geben.
+        shiftRepository.deleteByCohortId(id);
         cohortRepository.deleteById(id);
+    }
+
+    public long countShiftsOfCohort(UUID id) {
+        if (!cohortRepository.existsById(id)) {
+            throw new ResourceNotFoundException(
+                    "No cohort found with id: " + id);
+        }
+        return shiftRepository.countByCohortId(id);
     }
 }

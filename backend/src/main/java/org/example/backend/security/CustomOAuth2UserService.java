@@ -21,7 +21,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = Objects.requireNonNull(super.loadUser(userRequest)); // tells Sonar: this is never null
-        if (!userRepository.existsByGithubName(oAuth2User.getAttribute("login"))) {
+        if (!userRepository.existsByGithubNameAndActiveTrue(oAuth2User.getAttribute("login"))) {
             throw new OAuth2AuthenticationException("not_registered");
         }
         return oAuth2User;
