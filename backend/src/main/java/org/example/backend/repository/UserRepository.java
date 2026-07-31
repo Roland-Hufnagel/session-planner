@@ -9,6 +9,8 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByGithubName(String githubName);
 
+    boolean existsByGithubNameAndActiveTrue(String githubName);
+
     boolean existsByGithubName(String githubName);
 
     boolean existsByGithubNameAndIdNot(String githubName, UUID id);
@@ -16,5 +18,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmail(String email);
 
     boolean existsByEmailAndIdNot(String email, UUID id);
+
+    Optional<User> findByEmail(String email);
 
 }
