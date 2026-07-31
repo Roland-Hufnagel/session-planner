@@ -12,4 +12,10 @@ public interface ShiftRepository extends JpaRepository<Shift, UUID> {
 
     @EntityGraph(attributePaths = {"coach", "cohort"})
     List<Shift> findByDateBetweenOrderByDateAscStartTimeAsc(LocalDate from, LocalDate to);
+
+    long countByCohortId(UUID cohortId);
+
+    void deleteByCohortId(UUID cohortId);
+
+    List<Shift> findByCoachId(UUID coachId);
 }
