@@ -38,7 +38,7 @@ class UserControllerTest {
     void findAllUsers_returns200AndUserList() throws Exception {
         UserResponseDto userResponseDto = new UserResponseDto(
                 UUID.randomUUID(), "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         when(mockUserService.findAllUsers()).thenReturn(List.of(userResponseDto));
 
         mockMvc.perform(get("/api/users"))
@@ -54,7 +54,7 @@ class UserControllerTest {
         UUID id = UUID.randomUUID();
         UserResponseDto userResponseDto = new UserResponseDto(
                 id, "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         when(mockUserService.findUserById(id)).thenReturn(userResponseDto);
 
         mockMvc.perform(get("/api/users/{id}", id))
@@ -85,7 +85,7 @@ class UserControllerTest {
         UUID id = UUID.randomUUID();
         UserResponseDto userResponseDto = new UserResponseDto(
                 id, "Peter Klein", "Peter K.", Role.ADMIN,
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         when(mockUserService.createUser(any(UserRequestDto.class))).thenReturn(userResponseDto);
 
         String requestBody = """
@@ -165,7 +165,7 @@ class UserControllerTest {
         UUID id = UUID.randomUUID();
         UserResponseDto userResponseDto = new UserResponseDto(
                 id, "Peter Klein", "Pete", Role.COACH,
-                "peterk", "peterk@neuefische.de", null);
+                "peterk", "peterk@neuefische.de", null, true);
         // if one argument is a matcher ('any(UserRequestDto.class)') then all arguments have to be matcher (-> 'eq(id)')
         when(mockUserService.updateUser(eq(id), any(UserRequestDto.class))).thenReturn(userResponseDto);
 
