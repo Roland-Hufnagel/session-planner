@@ -1,6 +1,7 @@
 package org.example.backend.controller;
 
 import jakarta.validation.Valid;
+import org.example.backend.dto.AssignCoachRequestDto;
 import org.example.backend.dto.ShiftRequestDto;
 import org.example.backend.dto.ShiftResponseDto;
 import org.example.backend.exception.MissingQueryParameterException;
@@ -47,6 +48,12 @@ public class ShiftController {
     public ShiftResponseDto updateShift(@PathVariable UUID id, @Valid @RequestBody ShiftRequestDto shiftRequestDto) {
         return shiftService.updateShift(id, shiftRequestDto);
     }
+
+    @PutMapping("/{id}/coach")
+    public ShiftResponseDto assignCoach(@PathVariable UUID id, @Valid @RequestBody AssignCoachRequestDto assignCoachRequestDto) {
+        return shiftService.assignCoach(id, assignCoachRequestDto.coachId());
+    }
+
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
