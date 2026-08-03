@@ -1,5 +1,3 @@
-// noinspection CssUnresolvedCustomProperty
-
 import {useId, type ReactNode} from "react";
 import styled from "styled-components";
 
@@ -104,6 +102,7 @@ export const ColorInput = styled.input`
     cursor: pointer;
 
     /* Die inneren Pseudo-Elemente tragen eigene Rahmen/Abstaende der Browser. */
+
     &::-webkit-color-swatch-wrapper {
         padding: 0;
     }
