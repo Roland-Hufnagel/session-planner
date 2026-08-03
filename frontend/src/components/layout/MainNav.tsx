@@ -5,6 +5,7 @@ import styled from "styled-components";
 const LINKS = [
     {to: "/users", label: "Users"},
     {to: "/cohorts", label: "Cohorts"},
+    {to: "/shifts", label: "Shifts"},
 ];
 
 /** Ab hier wird es mit Brand + Navigation + Nutzerbereich zu eng. */
