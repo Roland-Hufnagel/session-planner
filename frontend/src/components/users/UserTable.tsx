@@ -1,7 +1,9 @@
 import {useNavigate} from "react-router-dom";
+import styled from "styled-components";
 import type {User} from "../../types/user";
 import {UserAvatar} from "./UserAvatar";
 import {RoleBadge} from "./RoleBadge";
+import {InactiveBadge} from "./InactiveBadge";
 import {Scroll, Table, Th, Row, Td, Identity, Name, Nickname, Muted} from "../ui/Table.ts";
 
 /** Nur-Lese-Uebersicht aller User. Ein Klick auf eine Zeile oeffnet die Detailseite. */
@@ -45,7 +47,10 @@ export function UserTable({users}: Readonly<{ users: User[] }>) {
                             </Identity>
                         </Td>
                         <Td>
-                            <RoleBadge role={user.role}/>
+                            <Badges>
+                                <RoleBadge role={user.role}/>
+                                {!user.active && <InactiveBadge/>}
+                            </Badges>
                         </Td>
                         <Td>{user.githubName}</Td>
                         <Td>
@@ -58,3 +63,9 @@ export function UserTable({users}: Readonly<{ users: User[] }>) {
         </Scroll>
     );
 }
+
+const Badges = styled.div`
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+`;
