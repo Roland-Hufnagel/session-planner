@@ -5,6 +5,7 @@ import {UsersPage} from "./pages/UsersPage";
 import {UserDetailPage} from "./pages/UserDetailPage";
 import {CohortsPage} from "./pages/CohortsPage";
 import {CohortDetailPage} from "./pages/CohortDetailPage";
+import {ShiftsPage} from "./pages/ShiftsPage";
 import {ProtectedRoute} from "./components/auth/ProtectedRoute.tsx";
 import {NotFoundPage} from "./pages/NotFoundPage";
 
@@ -20,6 +21,7 @@ function App() {
                         <Route path="/users/:id" element={<UserDetailPage/>}/>
                         <Route path="/cohorts" element={<CohortsPage/>}/>
                         <Route path="/cohorts/:id" element={<CohortDetailPage/>}/>
+                        <Route path="/shifts" element={<ShiftsPage/>}/>
                     </Route>
                     <Route path="*" element={<NotFoundPage/>}/>
                 </Routes>

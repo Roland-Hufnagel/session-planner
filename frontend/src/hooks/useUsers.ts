@@ -55,19 +55,25 @@ export function useUsers() {
         return updatedUser!;
     }
 
-    async function removeUser(id: string): Promise<void> {
+    /** Der API-Aufruf heisst weiter deleteUser – er spricht DELETE /api/users/{id}
+     * an; was der Endpunkt fachlich tut, steht hier im Namen.
+     */
+    async function deactivateUser(id: string): Promise<void> {
+        const asDeactivated = (currentUsers: User[]) =>
+            currentUsers.map((user) => (user.id === id ? {...user, active: false} : user));
+
         await mutate(
             async (currentUsers = []) => {
                 await deleteUser(id);
-                return currentUsers.filter((user) => user.id !== id);
+                return asDeactivated(currentUsers);
             },
             {
-                optimisticData: (currentUsers = []) => currentUsers.filter((user) => user.id !== id),
+                optimisticData: (currentUsers = []) => asDeactivated(currentUsers),
                 rollbackOnError: true,
                 revalidate: false,
             },
         );
     }
 
-    return {users, error, isLoading, addUser, editUser, removeUser};
+    return {users, error, isLoading, addUser, editUser, deactivateUser};
 }
