@@ -1,13 +1,15 @@
 import {useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
+import styled from "styled-components";
 import {useUsers} from "../hooks/useUsers";
 import {getErrorMessage} from "../api/errors";
-import type {UserInput} from "../types/user";
+import {toUserInput, type UserInput} from "../types/user";
 import {Button} from "../components/ui/Button";
 import {Modal} from "../components/ui/Modal";
 import {ConfirmDialog} from "../components/ui/ConfirmDialog";
 import {UserAvatar} from "../components/users/UserAvatar";
 import {RoleBadge} from "../components/users/RoleBadge";
+import {InactiveBadge} from "../components/users/InactiveBadge";
 import {UserForm} from "../components/users/UserForm";
 import {
     BackLink,
@@ -26,15 +28,16 @@ import {
 } from "../components/ui/DetailCart.ts";
 import {Info, ErrorBox} from "../components/ui/PageState.ts";
 
-/** Detailseite eines Users: zeigt die Daten und bietet Bearbeiten/Löschen. */
 export function UserDetailPage() {
     const {id} = useParams();
     const navigate = useNavigate();
-    const {users, error, isLoading, editUser, removeUser} = useUsers();
+    const {users, error, isLoading, editUser, deactivateUser} = useUsers();
 
     const [editOpen, setEditOpen] = useState(false);
-    const [deleteOpen, setDeleteOpen] = useState(false);
-    const [deleting, setDeleting] = useState(false);
+    const [deactivateOpen, setDeactivateOpen] = useState(false);
+    const [deactivating, setDeactivating] = useState(false);
+    const [activateOpen, setActivateOpen] = useState(false);
+    const [activating, setActivating] = useState(false);
 
     const user = users.find((candidate) => candidate.id === id);
 
@@ -45,14 +48,25 @@ export function UserDetailPage() {
         navigate("/users");
     }
 
-    async function handleDelete() {
+    async function handleActivate() {
         if (!user) return;
-        setDeleting(true);
+        setActivating(true);
         try {
-            await removeUser(user.id);
+            await editUser(user.id, {...toUserInput(user), active: true});
             navigate("/users");
         } finally {
-            setDeleting(false);
+            setActivating(false);
+        }
+    }
+
+    async function handleDeactivate() {
+        if (!user) return;
+        setDeactivating(true);
+        try {
+            await deactivateUser(user.id);
+            navigate("/users");
+        } finally {
+            setDeactivating(false);
         }
     }
 
@@ -90,7 +104,10 @@ export function UserDetailPage() {
                             <Nickname>@{user.nickname}</Nickname>
                         </div>
                     </Identity>
-                    <RoleBadge role={user.role}/>
+                    <Badges>
+                        <RoleBadge role={user.role}/>
+                        {!user.active && <InactiveBadge/>}
+                    </Badges>
                 </CardHeader>
 
                 <Details>
@@ -106,13 +123,27 @@ export function UserDetailPage() {
                         <Dt>Avatar URL</Dt>
                         <Dd>{user.avatarUrl || <Muted>—</Muted>}</Dd>
                     </DetailRow>
+                    <DetailRow>
+                        <Dt>Status</Dt>
+                        <Dd>
+                            {user.active
+                                ? "Active"
+                                : "Inactive – cannot log in, but stays assigned to past shifts"}
+                        </Dd>
+                    </DetailRow>
                 </Details>
 
                 <CardActions>
                     <Button onClick={() => setEditOpen(true)}>Edit</Button>
-                    <Button $variant="danger-outline" onClick={() => setDeleteOpen(true)}>
-                        Delete
-                    </Button>
+                    {user.active ? (
+                        <Button $variant="danger-outline" onClick={() => setDeactivateOpen(true)}>
+                            Deactivate
+                        </Button>
+                    ) : (
+                        <Button $variant="secondary" onClick={() => setActivateOpen(true)}>
+                            Activate
+                        </Button>
+                    )}
                 </CardActions>
             </Card>
 
@@ -121,14 +152,36 @@ export function UserDetailPage() {
             </Modal>
 
             <ConfirmDialog
-                open={deleteOpen}
-                title="Delete user"
-                busy={deleting}
-                onConfirm={handleDelete}
-                onCancel={() => setDeleteOpen(false)}
+                open={deactivateOpen}
+                title="Deactivate user"
+                confirmLabel="Deactivate"
+                busy={deactivating}
+                onConfirm={handleDeactivate}
+                onCancel={() => setDeactivateOpen(false)}
             >
-                Delete <strong>{user.name}</strong>? This cannot be undone.
+                Deactivate <strong>{user.name}</strong>? They can no longer log in.
+                All shifts keep them as coach, and you can reactivate them later.
+            </ConfirmDialog>
+
+            <ConfirmDialog
+                open={activateOpen}
+                title="Activate user"
+                confirmLabel="Activate"
+                // Nicht destruktiv -> kein roter Button
+                confirmVariant="primary"
+                busy={activating}
+                onConfirm={handleActivate}
+                onCancel={() => setActivateOpen(false)}
+            >
+                Activate <strong>{user.name}</strong>? Logging in will be possible again,
+                and this coach can be assigned to new shifts.
             </ConfirmDialog>
         </>
     );
 }
+
+const Badges = styled.div`
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+`;
