@@ -19,6 +19,7 @@ const EMPTY: UserInput = {
     githubName: "",
     email: "",
     avatarUrl: "",
+    active: true,
 };
 
 /**
