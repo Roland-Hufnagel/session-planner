@@ -3,6 +3,7 @@ import {NavLink} from "react-router-dom";
 import styled from "styled-components";
 
 const LINKS = [
+    {to: "/schedule", label: "Schedule"},
     {to: "/users", label: "Users"},
     {to: "/cohorts", label: "Cohorts"},
     {to: "/shifts", label: "Shifts"},
