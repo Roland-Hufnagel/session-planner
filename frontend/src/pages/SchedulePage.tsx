@@ -27,6 +27,7 @@ export function SchedulePage() {
 
     const days = visibleDays(monday, shifts);
     const coaches = coachRows(users, shifts, me?.login);
+    const myCoachId = coaches.find(coach => coach.githubName === me?.login)?.id ?? null;
     // Zuweisen darf man nur an aktive Coaches – ausgeschiedene haben zwar noch
     // eine Zeile (wegen alter Shifts), sollen aber keine neuen bekommen.
     const assignableCoaches = coaches.filter((coach) => coach.active);
@@ -81,6 +82,7 @@ export function SchedulePage() {
                     onDelete={removeShift}
                     justAssignedShiftId={justAssignedShiftId}
                     onArrived={handleArrived}
+                    myCoachId={myCoachId}
                 />
             )}
         </>

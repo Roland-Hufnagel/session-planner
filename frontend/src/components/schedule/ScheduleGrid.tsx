@@ -18,6 +18,7 @@ type ScheduleGridProps = {
     onDelete: (shiftId: string) => Promise<void>;
     justAssignedShiftId: string | null;
     onArrived: (shiftId: string) => void;
+    myCoachId: string | null;
 };
 
 /**
@@ -37,6 +38,7 @@ export function ScheduleGrid({
                                  onDelete,
                                  justAssignedShiftId,
                                  onArrived,
+                                 myCoachId
                              }: Readonly<ScheduleGridProps>) {
     const today = todayIso();
 
@@ -80,9 +82,9 @@ export function ScheduleGrid({
                     />
                 ))}
 
-                {coaches.map((coach, index) => (
+                {coaches.map((coach) => (
                     <Fragment key={coach.id}>
-                        <RowLabel $highlight={index === 0}>
+                        <RowLabel $highlight={coach.id === myCoachId}>
                             <UserAvatar user={coach}/>
                             <CoachName>{coach.nickname}</CoachName>
                             {!coach.active && (
