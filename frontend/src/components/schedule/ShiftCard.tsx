@@ -1,14 +1,17 @@
 import type {AnimationEvent} from "react";
 import styled, {css, keyframes} from "styled-components";
-import type {Shift} from "../../types/shift";
+import type {Shift, ShiftInput} from "../../types/shift";
 import type {User} from "../../types/user";
 import {formatIsoTime} from "../../utils/date";
 import {CoachPicker} from "./CoachPicker";
+import {ShiftEditor} from "./ShiftEditor";
 
 type ShiftCardProps = {
     shift: Shift;
     coaches: User[];
     onAssign: (coach: User | null) => void;
+    onEdit: (input: ShiftInput) => Promise<void>;
+    onDelete: () => Promise<void>;
     arriving?: boolean;
     onArrived?: () => void;
 };
@@ -18,6 +21,8 @@ export function ShiftCard({
                               shift,
                               coaches,
                               onAssign,
+                              onEdit,
+                              onDelete,
                               arriving = false,
                               onArrived,
                           }: Readonly<ShiftCardProps>) {
@@ -32,6 +37,7 @@ export function ShiftCard({
             $arriving={arriving}
             onAnimationEnd={handleAnimationEnd}
         >
+            <ShiftEditor shift={shift} onSubmit={onEdit} onDelete={onDelete}/>
             <Header>
                 <Time>
                     {formatIsoTime(shift.startTime)}–{formatIsoTime(shift.endTime)}
@@ -69,6 +75,17 @@ const Card = styled.div<{ $arriving: boolean }>`
     box-shadow: var(--shadow-1);
     overflow: hidden;
     line-height: 1.3;
+    /* Bezug fuer das Klick-Overlay in ShiftEditor. */
+    position: relative;
+
+    /* Die ganze Karte ist klickbar – das braucht eine Rueckmeldung, sonst sieht
+       sie aus wie reine Anzeige. Nur der Schatten, keine Farbaenderung: Die
+       Flaeche traegt die Cohort-Farbe, an der soll nichts wackeln. */
+    transition: box-shadow var(--transition-fast);
+
+    &:hover {
+        box-shadow: var(--shadow-2);
+    }
 
     ${(props) =>
             props.$arriving &&
