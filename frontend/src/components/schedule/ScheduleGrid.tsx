@@ -1,7 +1,7 @@
 import {Fragment} from "react";
 import styled, {css} from "styled-components";
 import dayjs from "dayjs";
-import type {Shift} from "../../types/shift";
+import type {Shift, ShiftInput} from "../../types/shift";
 import type {User} from "../../types/user";
 import {todayIso} from "../../utils/date";
 import {UserAvatar} from "../users/UserAvatar";
@@ -14,6 +14,8 @@ type ScheduleGridProps = {
     shifts: Shift[];
     assignableCoaches: User[];
     onAssign: (shiftId: string, coach: User | null) => void;
+    onEdit: (shiftId: string, input: ShiftInput) => Promise<void>;
+    onDelete: (shiftId: string) => Promise<void>;
     justAssignedShiftId: string | null;
     onArrived: (shiftId: string) => void;
 };
@@ -31,6 +33,8 @@ export function ScheduleGrid({
                                  shifts,
                                  assignableCoaches,
                                  onAssign,
+                                 onEdit,
+                                 onDelete,
                                  justAssignedShiftId,
                                  onArrived,
                              }: Readonly<ScheduleGridProps>) {
@@ -69,6 +73,8 @@ export function ScheduleGrid({
                         isToday={day === today}
                         coaches={assignableCoaches}
                         onAssign={onAssign}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
                         justAssignedShiftId={justAssignedShiftId}
                         onArrived={onArrived}
                     />
@@ -92,6 +98,8 @@ export function ScheduleGrid({
                                 isToday={day === today}
                                 coaches={assignableCoaches}
                                 onAssign={onAssign}
+                                onEdit={onEdit}
+                                onDelete={onDelete}
                                 justAssignedShiftId={justAssignedShiftId}
                                 onArrived={onArrived}
                             />
