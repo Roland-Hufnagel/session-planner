@@ -132,6 +132,11 @@ const PickerButton = styled.button`
     width: 18px;
     height: 18px;
     flex-shrink: 0;
+    /* Ueber dem Klick-Overlay der Karte (z-index: 1 in ShiftEditor), sonst
+       oeffnet ein Klick auf den Picker das Bearbeiten-Formular. z-index braucht
+       eine Position, deshalb relative. */
+    position: relative;
+    z-index: 2;
     border: none;
     border-radius: var(--radius-sm);
     background: rgba(255, 255, 255, 0.2);
