@@ -58,10 +58,6 @@ const ErrorText = styled.span`
     color: var(--color-danger);
 `;
 
-/**
- * Basis-Styles fuer Text-Eingaben und Selects – als styled-Komponenten,
- * damit sie den Field-Render-Prop direkt entgegennehmen koennen.
- */
 // eslint-disable-next-line react-refresh/only-export-components
 export const Input = styled.input`
     height: 42px;
@@ -84,38 +80,6 @@ export const Input = styled.input`
 
     &[aria-invalid="true"] {
         border-color: var(--color-danger);
-    }
-`;
-
-/**
- * Farbwaehler. Eigene Styles statt Input, weil type="color" die Swatch als
- * Inhalt rendert: Ohne padding: 0 bleibt ein dicker Rahmen um die Farbflaeche.
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export const ColorInput = styled.input`
-    width: 64px;
-    height: 42px;
-    padding: var(--space-1);
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    cursor: pointer;
-
-    /* Die inneren Pseudo-Elemente tragen eigene Rahmen/Abstaende der Browser. */
-
-    &::-webkit-color-swatch-wrapper {
-        padding: 0;
-    }
-
-    &::-webkit-color-swatch {
-        border: none;
-        border-radius: var(--radius-sm);
-    }
-
-    &:focus {
-        outline: none;
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 3px var(--color-focus-ring);
     }
 `;
 
