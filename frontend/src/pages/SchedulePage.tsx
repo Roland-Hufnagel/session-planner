@@ -20,7 +20,8 @@ export function SchedulePage() {
     const [monday, setMonday] = useState(() => mondayOf());
     const [justAssignedShiftId, setJustAssignedShiftId] = useState<string | null>(null);
 
-    const {shifts, error, isLoading, assignShiftCoach} = useWeekShifts(monday, sundayOf(monday));
+    const {shifts, error, isLoading, assignShiftCoach, editShift, removeShift} =
+        useWeekShifts(monday, sundayOf(monday));
     const {users, error: usersError} = useUsers();
     const {user: me} = useAuth();
 
@@ -76,6 +77,8 @@ export function SchedulePage() {
                     shifts={shifts}
                     assignableCoaches={assignableCoaches}
                     onAssign={handleAssign}
+                    onEdit={editShift}
+                    onDelete={removeShift}
                     justAssignedShiftId={justAssignedShiftId}
                     onArrived={handleArrived}
                 />
