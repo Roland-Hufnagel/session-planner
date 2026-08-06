@@ -68,3 +68,8 @@ export const Nickname = styled.div`
 export const Muted = styled.span`
     color: var(--color-text-secondary);
 `;
+
+export const Unassigned = styled.span`
+    color: var(--color-text-muted);
+    font-style: italic;
+`;
