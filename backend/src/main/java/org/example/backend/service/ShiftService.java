@@ -105,6 +105,16 @@ public class ShiftService {
         return ShiftResponseDto.from(savedShift);
     }
 
+    @Transactional
+    public ShiftResponseDto assignCoach(UUID shiftId, UUID coachId) {
+        Shift existingShift = shiftRepository.findById(shiftId).orElseThrow(() -> new ResourceNotFoundException(
+                "No shift found with id: " + shiftId));
+        User assignedCoach = getCoach(coachId);
+        existingShift.setCoach(assignedCoach);
+        Shift savedShift = shiftRepository.save(existingShift);
+        return ShiftResponseDto.from(savedShift);
+    }
+
 
     // Helper:
     private void validateDateRange(LocalDate from, LocalDate to) {

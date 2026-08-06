@@ -12,12 +12,13 @@ import {
     type FederalState,
 } from "../../types/cohort";
 import {getErrorMessage, getValidationErrors} from "../../api/errors";
+import {DEFAULT_COHORT_COLOR} from "../../styles/cohortColors";
 import {Button} from "../ui/Button";
-import {ColorInput, Field, Input, Select} from "../ui/Field";
+import {Field, Input, Select} from "../ui/Field";
 import {Form, FormError, Actions} from "../ui/FormLayout.ts";
+import {CohortColorPicker} from "./CohortColorPicker";
 
 type CohortFormProps = {
-    /** Vorhandene Cohort beim Bearbeiten; undefined beim Anlegen. */
     initial?: Cohort;
     onSubmit: (input: CohortInput) => Promise<void>;
     onCancel: () => void;
@@ -30,8 +31,7 @@ const EMPTY: CohortInput = {
     endDate: "",
     federalState: "HH",
     department: "WD",
-    // type="color" hat keinen leeren Zustand – ohne Startwert waere es Schwarz.
-    colorCode: "#d93500",
+    colorCode: DEFAULT_COHORT_COLOR,
 };
 
 /**
@@ -162,19 +162,11 @@ export function CohortForm({initial, onSubmit, onCancel}: Readonly<CohortFormPro
                 </Field>
             </TwoColumns>
 
-            <Field label="Color" error={fieldErrors.colorCode}>
-                {(props) => (
-                    <ColorRow>
-                        <ColorInput
-                            {...props}
-                            type="color"
-                            value={values.colorCode}
-                            onChange={(event) => update("colorCode", event.target.value)}
-                        />
-                        <ColorCode>{values.colorCode}</ColorCode>
-                    </ColorRow>
-                )}
-            </Field>
+            <CohortColorPicker
+                value={values.colorCode}
+                onChange={(colorCode) => update("colorCode", colorCode)}
+                error={fieldErrors.colorCode}
+            />
 
             <Actions>
                 <Button type="button" $variant="secondary" onClick={onCancel} disabled={submitting}>
@@ -188,8 +180,6 @@ export function CohortForm({initial, onSubmit, onCancel}: Readonly<CohortFormPro
     );
 }
 
-
-/** Zwei zusammengehoerende Felder in einer Reihe – auf Mobil untereinander. */
 const TwoColumns = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -200,14 +190,4 @@ const TwoColumns = styled.div`
     }
 `;
 
-const ColorRow = styled.div`
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-`;
-
-const ColorCode = styled.span`
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-`;
 

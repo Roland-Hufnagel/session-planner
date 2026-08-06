@@ -456,4 +456,71 @@ class ShiftServiceTest {
         verify(mockShiftRepo, never()).deleteById(any(UUID.class));
     }
 
+    // ----- assignCoach -----
+    @Test
+    void assignCoach_setsCoachAndReturnsDto() {
+        UUID id = UUID.randomUUID();
+        UUID coachId = UUID.randomUUID();
+        Shift existingShift = shift(id, null, cohort(UUID.randomUUID())); // unbesetzt
+        when(mockShiftRepo.findById(id)).thenReturn(Optional.of(existingShift));
+        when(mockUserRepo.findById(coachId)).thenReturn(Optional.of(coach(coachId)));
+        when(mockShiftRepo.save(any(Shift.class))).thenReturn(existingShift);
+
+        ShiftResponseDto result = shiftService.assignCoach(id, coachId);
+
+        assertThat(result.coach()).isNotNull();
+        assertThat(result.coach().id()).isEqualTo(coachId);
+        verify(mockShiftRepo).save(any(Shift.class));
+    }
+
+    @Test
+    void assignCoach_removesCoach_whenCoachIdIsNull() {
+        UUID id = UUID.randomUUID();
+        Shift existingShift = shift(id, coach(UUID.randomUUID()), cohort(UUID.randomUUID()));
+        when(mockShiftRepo.findById(id)).thenReturn(Optional.of(existingShift));
+        when(mockShiftRepo.save(any(Shift.class))).thenReturn(existingShift);
+
+        ShiftResponseDto result = shiftService.assignCoach(id, null);
+
+        // Unassign: Das Repository darf mit null gar nicht befragt werden,
+        // findById(null) wirft bei Spring Data.
+        assertThat(result.coach()).isNull();
+        verify(mockUserRepo, never()).findById(any());
+        verify(mockShiftRepo).save(any(Shift.class));
+    }
+
+    @Test
+    void assignCoach_throwsNotFound_whenShiftDoesNotExist() {
+        UUID id = UUID.randomUUID();
+        UUID coachId = UUID.randomUUID();
+        when(mockShiftRepo.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> shiftService.assignCoach(id, coachId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("No shift found with id: " + id);
+
+        // Die Shift-Pruefung kommt zuerst -> der Coach wird nicht mehr geladen.
+        verify(mockUserRepo, never()).findById(any());
+        verify(mockShiftRepo, never()).save(any());
+    }
+
+    @Test
+    void assignCoach_throwsNotFound_whenCoachDoesNotExist() {
+        UUID id = UUID.randomUUID();
+        UUID unknownCoachId = UUID.randomUUID();
+        User previousCoach = coach(UUID.randomUUID());
+        Shift existingShift = shift(id, previousCoach, cohort(UUID.randomUUID()));
+        when(mockShiftRepo.findById(id)).thenReturn(Optional.of(existingShift));
+        when(mockUserRepo.findById(unknownCoachId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> shiftService.assignCoach(id, unknownCoachId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("No coach found with id: " + unknownCoachId);
+
+        // Die bestehende Zuordnung bleibt unangetastet – nicht speichern und
+        // auch nicht vorher auf null setzen.
+        assertThat(existingShift.getCoach()).isEqualTo(previousCoach);
+        verify(mockShiftRepo, never()).save(any());
+    }
+
 }

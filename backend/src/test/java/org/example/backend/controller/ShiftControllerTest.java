@@ -477,4 +477,75 @@ class ShiftControllerTest {
                 .andExpect(jsonPath("$.message").value("No shift found with id: " + id));
     }
 
+    // ----- assignCoach -----
+    @Test
+    void assignCoach_returns200AndUpdatedShift() throws Exception {
+        UUID id = UUID.randomUUID();
+        UUID coachId = UUID.randomUUID();
+        when(mockShiftService.assignCoach(id, coachId)).thenReturn(shiftResponse(id));
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":\"" + coachId + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.coach.nickname").value("Pete"));
+    }
+
+    @Test
+    void assignCoach_returns200_whenUnassigning() throws Exception {
+        UUID id = UUID.randomUUID();
+        // coachId null = Coach entfernen. Der Service bekommt null durchgereicht.
+        when(mockShiftService.assignCoach(id, null)).thenReturn(shiftResponse(id));
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":null}"))
+                .andExpect(status().isOk());
+
+        verify(mockShiftService).assignCoach(id, null);
+    }
+
+    @Test
+    void assignCoach_treatsMissingFieldAsUnassign() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(mockShiftService.assignCoach(id, null)).thenReturn(shiftResponse(id));
+
+        // Fehlendes Feld kommt bei Jackson als null an – gleiche Wirkung wie
+        // ein explizites null, also ebenfalls Unassign.
+        mockMvc.perform(put("/api/shifts/{id}/coach", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk());
+
+        verify(mockShiftService).assignCoach(id, null);
+    }
+
+    @Test
+    void assignCoach_returns404_whenShiftDoesNotExist() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(mockShiftService.assignCoach(eq(id), any()))
+                .thenThrow(new ResourceNotFoundException("No shift found with id: " + id));
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":null}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("No shift found with id: " + id));
+    }
+
+    @Test
+    void assignCoach_returns404_whenCoachDoesNotExist() throws Exception {
+        UUID id = UUID.randomUUID();
+        UUID unknownCoachId = UUID.randomUUID();
+        when(mockShiftService.assignCoach(id, unknownCoachId))
+                .thenThrow(new ResourceNotFoundException("No coach found with id: " + unknownCoachId));
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":\"" + unknownCoachId + "\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("No coach found with id: " + unknownCoachId));
+    }
+
 }
