@@ -1,5 +1,7 @@
 package org.example.backend.service;
 
+import org.example.backend.dto.ShiftBatchRequestDto;
+import org.example.backend.dto.ShiftImportRowDto;
 import org.example.backend.dto.ShiftRequestDto;
 import org.example.backend.dto.ShiftResponseDto;
 import org.example.backend.exception.InvalidDateRangeException;
@@ -67,6 +69,24 @@ public class ShiftService {
     }
 
     @Transactional
+    public void createShifts(ShiftBatchRequestDto shiftBatchRequestDto) {
+        List<ShiftImportRowDto> rows = shiftBatchRequestDto.shifts();
+
+        for (int index = 0; index < rows.size(); index++) {
+            ShiftImportRowDto row = rows.get(index);
+            validateTimeRange(row.startTime(), row.endTime(),
+                    "shifts[" + index + "]: ");
+        }
+
+        Cohort cohort = getCohort(shiftBatchRequestDto.cohortId());
+        List<Shift> newShifts = rows.stream()
+                .map(row -> row.toEntity(cohort))
+                .toList();
+
+        shiftRepository.saveAll(newShifts);
+    }
+
+    @Transactional
     public ShiftResponseDto updateShift(UUID id, ShiftRequestDto shiftRequestDto) {
         // first check the existence!
         Shift existingShift = shiftRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(
@@ -101,9 +121,17 @@ public class ShiftService {
     }
 
     private void validateTimeRange(LocalTime start, LocalTime end) {
+        validateTimeRange(start, end, "");
+    }
+
+    /**
+     * @param location Praefix fuer die Meldung, z.B. "shifts[3]: " beim Batch-Import.
+     *                 Leer bei Einzel-Shifts.
+     */
+    private void validateTimeRange(LocalTime start, LocalTime end, String location) {
         if (!end.isAfter(start)) {
             throw new InvalidDateRangeException(
-                    "'endTime' must be after 'startTime': "
+                    location + "'endTime' must be after 'startTime': "
                             + start + " >= " +
                             end);
         }
@@ -130,4 +158,5 @@ public class ShiftService {
         }
         shiftRepository.deleteById(id);
     }
+
 }
