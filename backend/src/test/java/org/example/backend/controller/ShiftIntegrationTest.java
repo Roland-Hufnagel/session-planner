@@ -246,6 +246,81 @@ class ShiftIntegrationTest {
                         "Provide either 'cohortId' or both 'from' and 'to'"));
     }
 
+    // ----- assignCoach -----
+    @Test
+    void assignCoach_persistsInDb() throws Exception {
+        Shift shift = seedShift(null, seedCohort());   // unbesetzt
+        User coach = seedCoach();
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", shift.getId()).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":\"" + coach.getId() + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.coach.id").value(coach.getId().toString()));
+
+        assertThat(shiftRepository.findById(shift.getId()))
+                .isPresent()
+                .get()
+                .satisfies(updated ->
+                        assertThat(updated.getCoach().getId()).isEqualTo(coach.getId()));
+    }
+
+    @Test
+    void assignCoach_withNullRemovesCoachInDb() throws Exception {
+        Shift shift = seedShift(seedCoach(), seedCohort());   // besetzt
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", shift.getId()).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":null}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.coach").value(nullValue()));
+
+        assertThat(shiftRepository.findById(shift.getId()))
+                .isPresent()
+                .get()
+                .satisfies(updated -> assertThat(updated.getCoach()).isNull());
+    }
+
+    /**
+     * Eine unbekannte coachId darf die bestehende Zuordnung nicht beschaedigen.
+     *
+     * Das haengt an der Reihenfolge in assignCoach: Erst die Shift laden, dann den
+     * Coach aufloesen. Wuerde zuerst setCoach(null) laufen, waere die Zuweisung
+     * nach dem 404 weg.
+     */
+    @Test
+    void assignCoach_keepsAssignment_whenCoachDoesNotExist() throws Exception {
+        User coach = seedCoach();
+        Shift shift = seedShift(coach, seedCohort());
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", shift.getId()).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":\"" + UUID.randomUUID() + "\"}"))
+                .andExpect(status().isNotFound());
+
+        assertThat(shiftRepository.findById(shift.getId()))
+                .isPresent()
+                .get()
+                .satisfies(unchanged ->
+                        assertThat(unchanged.getCoach().getId()).isEqualTo(coach.getId()));
+    }
+
+    @Test
+    void assignCoach_returns403_whenCsrfTokenIsMissing() throws Exception {
+        User coach = seedCoach();
+        Shift shift = seedShift(null, seedCohort());
+
+        mockMvc.perform(put("/api/shifts/{id}/coach", shift.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"coachId\":\"" + coach.getId() + "\"}"))
+                .andExpect(status().isForbidden());
+
+        assertThat(shiftRepository.findById(shift.getId()))
+                .isPresent()
+                .get()
+                .satisfies(unchanged -> assertThat(unchanged.getCoach()).isNull());
+    }
+
     @Test
     void deleteShiftById_removesFromDb() throws Exception {
         Shift shift = seedShift(seedCoach(), seedCohort());

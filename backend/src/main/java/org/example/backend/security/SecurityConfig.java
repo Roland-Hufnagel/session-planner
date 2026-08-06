@@ -35,7 +35,7 @@ public class SecurityConfig {
                         // Deletes the cookie in the browser
                         .deleteCookies("JSESSIONID"))
                 .oauth2Login(o -> o
-                        .defaultSuccessUrl("/users", true)
+                        .defaultSuccessUrl("/schedule", true)
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .failureUrl("/?error=not_registered"));
 

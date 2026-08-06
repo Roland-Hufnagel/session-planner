@@ -40,6 +40,7 @@ export const GlobalStyle = createGlobalStyle`
     --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-display: "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 
+    --text-2xs: 11px;
     --text-xs: 12px;
     --text-sm: 14px;
     --text-md: 16px;
