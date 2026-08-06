@@ -1,5 +1,7 @@
 package org.example.backend.service;
 
+import org.example.backend.dto.ShiftBatchRequestDto;
+import org.example.backend.dto.ShiftImportRowDto;
 import org.example.backend.dto.ShiftRequestDto;
 import org.example.backend.dto.ShiftResponseDto;
 import org.example.backend.exception.InvalidDateRangeException;
@@ -9,6 +11,7 @@ import org.example.backend.repository.CohortRepository;
 import org.example.backend.repository.ShiftRepository;
 import org.example.backend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -264,6 +267,116 @@ class ShiftServiceTest {
                 .isInstanceOf(InvalidDateRangeException.class);
 
         verify(mockShiftRepo, never()).save(any());
+    }
+
+    // ----- createShifts: der Batch-Import -----
+    private static ShiftImportRowDto row(String title, LocalTime start, LocalTime end) {
+        return new ShiftImportRowDto(title, DATE, start, end);
+    }
+
+    private static ShiftBatchRequestDto batch(UUID cohortId, ShiftImportRowDto... rows) {
+        return new ShiftBatchRequestDto(cohortId, List.of(rows));
+    }
+
+    @Test
+    void createShifts_savesAllRowsWithTheBatchCohort() {
+        UUID cohortId = UUID.randomUUID();
+        when(mockCohortRepo.findById(cohortId)).thenReturn(Optional.of(cohort(cohortId)));
+        ArgumentCaptor<List<Shift>> savedShifts = ArgumentCaptor.captor();
+
+        shiftService.createShifts(batch(cohortId,
+                row("Morning session", START, END),
+                row("Afternoon session", LocalTime.of(13, 30), LocalTime.of(17, 0))));
+
+        // Ein saveAll fuer den ganzen Batch, nicht ein save pro Zeile
+        verify(mockShiftRepo).saveAll(savedShifts.capture());
+        List<Shift> shifts = savedShifts.getValue();
+        assertThat(shifts).hasSize(2)
+                .allSatisfy(shift -> {
+                    // Die Cohorte aus dem Wrapper landet in jeder Zeile ...
+                    assertThat(shift.getCohort().getId()).isEqualTo(cohortId);
+                    // ... und der Import weist keinen Coach zu
+                    assertThat(shift.getCoach()).isNull();
+                });
+        assertThat(shifts.getFirst().getTitle()).isEqualTo("Morning session");
+        assertThat(shifts.getLast().getStartTime()).isEqualTo(LocalTime.of(13, 30));
+    }
+
+    @Test
+    void createShifts_looksUpCohortOnce_regardlessOfRowCount() {
+        UUID cohortId = UUID.randomUUID();
+        when(mockCohortRepo.findById(cohortId)).thenReturn(Optional.of(cohort(cohortId)));
+
+        shiftService.createShifts(batch(cohortId,
+                row("First", START, END),
+                row("Second", START, END),
+                row("Third", START, END)));
+
+        // Die cohortId steht im Wrapper -> ein Lookup, kein N+1
+        verify(mockCohortRepo, times(1)).findById(cohortId);
+        // Der Import kennt keine Coach-Spalte, also wird der User-Repo nie befragt
+        verify(mockUserRepo, never()).findById(any());
+    }
+
+    @Test
+    void createShifts_throwsBadRequestWithRowIndex_whenEndTimeIsNotAfterStartTime() {
+        ShiftBatchRequestDto batchWithBadRow = batch(UUID.randomUUID(),
+                row("Morning session", START, END),
+                row("Backwards", LocalTime.of(18, 0), LocalTime.of(9, 0)));
+
+        // Der Index macht die fehlerhafte Zeile im Import auffindbar. Das Praefix
+        // ist Teil des Vertrags mit dem Frontend, also hier festgenagelt.
+        assertThatThrownBy(() -> shiftService.createShifts(batchWithBadRow))
+                .isInstanceOf(InvalidDateRangeException.class)
+                .hasMessageStartingWith("shifts[1]: ")
+                .hasMessageContaining("'endTime' must be after 'startTime'");
+
+        // Erst pruefen, dann schreiben: ein Fehler kostet keinen Schreibzugriff
+        verify(mockShiftRepo, never()).saveAll(any());
+    }
+
+    @Test
+    void createShifts_checksRowTimesBeforeCohort() {
+        UUID unknownCohortId = UUID.randomUUID();
+        when(mockCohortRepo.findById(unknownCohortId)).thenReturn(Optional.empty());
+        ShiftBatchRequestDto bothBroken = batch(unknownCohortId,
+                row("Backwards", LocalTime.of(18, 0), LocalTime.of(9, 0)));
+
+        // Gleiche Reihenfolge wie createShift: Zeiten zuerst. Beides kaputt ->
+        // 400 auf die Zeile, nicht 404 auf die Cohorte.
+        assertThatThrownBy(() -> shiftService.createShifts(bothBroken))
+                .isInstanceOf(InvalidDateRangeException.class)
+                .hasMessageStartingWith("shifts[0]: ");
+
+        verify(mockCohortRepo, never()).findById(any());
+    }
+
+    @Test
+    void createShifts_reportsOnlyTheFirstBadRow() {
+        UUID cohortId = UUID.randomUUID();
+        ShiftBatchRequestDto twoBadRows = batch(cohortId,
+                row("Fine", START, END),
+                row("Backwards", LocalTime.of(18, 0), LocalTime.of(9, 0)),
+                row("Zero length", START, START));
+
+        // Bewusst fail-fast: die Zeitpruefung bricht bei der ersten kaputten Zeile
+        // ab. Zeile 2 sieht der Aufrufer erst nach dem naechsten Versuch.
+        assertThatThrownBy(() -> shiftService.createShifts(twoBadRows))
+                .hasMessageStartingWith("shifts[1]: ");
+    }
+
+    @Test
+    void createShifts_throwsNotFound_whenCohortDoesNotExist() {
+        UUID cohortId = UUID.randomUUID();
+        when(mockCohortRepo.findById(cohortId)).thenReturn(Optional.empty());
+        ShiftBatchRequestDto batchWithUnknownCohort =
+                batch(cohortId, row("Morning session", START, END));
+
+        assertThatThrownBy(() -> shiftService.createShifts(batchWithUnknownCohort))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("No cohort found with id: " + cohortId);
+
+        verify(mockShiftRepo, never()).saveAll(any());
     }
 
     // ----- updateShift -----
