@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import {fetcher} from "../api/client";
-import {createShift, deleteShift, shiftsOfCohortUrl, updateShift} from "../api/shifts";
-import type {Shift, ShiftInput} from "../types/shift";
+import {createShift, createShifts, deleteShift, shiftsOfCohortUrl, updateShift} from "../api/shifts";
+import type {ParsedShiftRow, Shift, ShiftInput} from "../types/shift";
 
 /**
  * Shifts einer Cohorte.
@@ -57,6 +57,19 @@ export function useShifts(cohortId: string | null) {
         return updatedShift!;
     }
 
+    /**
+     * Legt einen ganzen CSV-Import an.
+     *
+     * Anders als addShift wird die Liste hier NICHT von Hand nachgezogen: Die
+     * Antwort ist 201 ohne Body, die neuen Shifts haben also noch keine id. Ein
+     * blankes mutate() laedt die Liste stattdessen neu.
+     */
+    async function importShifts(rows: ParsedShiftRow[]): Promise<void> {
+        if (!cohortId) return;
+        await createShifts(cohortId, rows);
+        await mutate();
+    }
+
     async function removeShift(id: string): Promise<void> {
         await mutate(
             async (currentShifts = []) => {
@@ -72,7 +85,7 @@ export function useShifts(cohortId: string | null) {
         );
     }
 
-    return {shifts, error, isLoading, addShift, editShift, removeShift};
+    return {shifts, error, isLoading, addShift, editShift, removeShift, importShifts};
 }
 
 /** Das Backend sortiert nach Datum und Startzeit – nach Mutationen selbst nachziehen. */

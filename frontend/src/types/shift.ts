@@ -34,6 +34,30 @@ export type ShiftInput = {
     cohortId: string;
 };
 
+export type ShiftImportRow = {
+    title: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+};
+
+/**
+ * Eine geparste CSV-Zeile: die Nutzdaten plus ihre Herkunft in der Datei.
+ *
+ * Die lineNumber bleibt im Client – sie dient nur dazu, Backend-Fehler wie
+ * "shifts[3]" auf die Zeile zurueckzurechnen, die der User im Editor sieht.
+ */
+export type ParsedShiftRow = ShiftImportRow & {
+    lineNumber: number;
+};
+
+/** Wirft die Zeilennummer ab: Nur die Nutzdaten gehen ans Backend. */
+export function toShiftImportRow(
+    {title, date, startTime, endTime}: ParsedShiftRow,
+): ShiftImportRow {
+    return {title, date, startTime, endTime};
+}
+
 /** Loest die Response-Form in die editierbaren Felder auf. */
 export function toShiftInput(shift: Shift): ShiftInput {
     return {
