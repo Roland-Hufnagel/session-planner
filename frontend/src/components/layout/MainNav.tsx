@@ -9,28 +9,10 @@ const LINKS = [
     {to: "/shifts", label: "Shifts"},
 ];
 
-/** Ab hier wird es mit Brand + Navigation + Nutzerbereich zu eng. */
-const NARROW_BREAKPOINT = "520px";
+const NARROW_BREAKPOINT = "720px";
 
 const MENU_ID = "main-nav-menu";
 
-/**
- * Hauptnavigation zwischen den Ressourcen-Views.
- *
- * NavLink statt Link: react-router setzt bei der aktiven Route automatisch
- * aria-current="page" – damit ist die Markierung auch fuer Screenreader da und
- * kann per Attribut-Selektor gestylt werden, ohne eigenen State.
- *
- * Auf schmalen Screens klappen die Links in ein Burgermenue. Es basiert auf dem
- * nativen popover-Attribut: Der Browser liefert Oeffnen/Schliessen, Escape,
- * Light-Dismiss (Klick daneben) und die Fokus-Rueckgabe an den Button gratis –
- * kein State, kein Outside-Click-Listener, keine Dependency. Gleiche Haltung wie
- * beim <dialog> in Modal.tsx.
- *
- * Breite und schmale Variante stehen beide im Markup und werden per CSS
- * umgeschaltet. Das per display:none ausgeblendete Menue ist auch aus dem
- * Accessibility-Tree raus, es gibt also nie zwei Navigationen gleichzeitig.
- */
 export function MainNav() {
     const menuRef = useRef<HTMLElement>(null);
 
@@ -153,6 +135,7 @@ const Item = styled(NavLink)`
     }
 
     /* Die aktive Route markiert react-router selbst per aria-current. */
+
     &[aria-current="page"] {
         background: var(--color-primary-soft);
         color: var(--color-primary);
