@@ -151,7 +151,7 @@ const Brand = styled.span`
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    font-family: var(--font-display);
+    font-family: var(--font-display) Verdana;
     font-size: var(--text-lg);
     font-weight: var(--weight-bold);
     letter-spacing: -0.01em;
