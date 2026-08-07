@@ -65,16 +65,17 @@ export function Header() {
     );
 }
 
-const MOBILE_BREAKPOINT = "640px";
+const TABLET_BREAKPOINT = "880px";
 
 const Left = styled.div`
     display: flex;
     align-items: center;
-    gap: var(--space-5);
+    gap: var(--space-3);
+    margin-right: 10px;
 `;
 
 const UserName = styled.span`
-    @media (max-width: ${MOBILE_BREAKPOINT}) {
+    @media (max-width: ${TABLET_BREAKPOINT}) {
         display: none;
     }
 `;
@@ -82,6 +83,7 @@ const Right = styled.div`
     display: flex;
     align-items: center;
     gap: var(--space-3);
+    flex-shrink: 0;
 `;
 
 const UserInfo = styled.div`
@@ -96,11 +98,12 @@ const Avatar = styled.img`
     width: 40px;
     height: 40px;
     border-radius: var(--radius-pill);
+    object-fit: cover;
 `;
 
 
 const LogoutLabel = styled.span`
-    @media (max-width: ${MOBILE_BREAKPOINT}) {
+    @media (max-width: ${TABLET_BREAKPOINT}) {
         display: none;
     }
 `;
@@ -110,7 +113,7 @@ const LogoutIcon = styled.svg`
     height: 18px;
     display: none;
 
-    @media (max-width: ${MOBILE_BREAKPOINT}) {
+    @media (max-width: ${TABLET_BREAKPOINT}) {
         display: block;
     }
 `;
@@ -119,7 +122,7 @@ const LogoutIcon = styled.svg`
 const LogoutButton = styled(Button)`
     height: 40px;
 
-    @media (max-width: ${MOBILE_BREAKPOINT}) {
+    @media (max-width: ${TABLET_BREAKPOINT}) {
         width: 40px;
         padding: 0;
     }
