@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Transactional(readOnly = true)
@@ -33,6 +34,11 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(
                 NO_USER_FOUND + id));
         return UserResponseDto.from(user);
+    }
+
+    public Optional<String> findAvatarUrlByGithubName(String githubName) {
+        return userRepository.findByGithubName(githubName)
+                .map(User::getAvatarUrl);
     }
 
     @Transactional
