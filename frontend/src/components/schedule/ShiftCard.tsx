@@ -77,6 +77,7 @@ const Card = styled.div<{ $arriving: boolean }>`
     line-height: 1.3;
     /* Bezug fuer das Klick-Overlay in ShiftEditor. */
     position: relative;
+    isolation: isolate;
 
     /* Die ganze Karte ist klickbar – das braucht eine Rueckmeldung, sonst sieht
        sie aus wie reine Anzeige. Nur der Schatten, keine Farbaenderung: Die
