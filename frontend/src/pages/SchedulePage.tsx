@@ -19,6 +19,7 @@ import {Toolbar, Title, Info, ErrorBox, Empty} from "../components/ui/PageState.
 export function SchedulePage() {
     const [monday, setMonday] = useState(() => mondayOf());
     const [justAssignedShiftId, setJustAssignedShiftId] = useState<string | null>(null);
+    const [assignError, setAssignError] = useState<string | null>(null);
 
     const {shifts, error, isLoading, assignShiftCoach, editShift, removeShift} =
         useWeekShifts(monday, sundayOf(monday));
@@ -34,7 +35,15 @@ export function SchedulePage() {
 
     async function handleAssign(shiftId: string, coach: User | null) {
         setJustAssignedShiftId(shiftId);
-        await assignShiftCoach(shiftId, coach);
+        setAssignError(null);
+        try {
+            await assignShiftCoach(shiftId, coach);
+        } catch (error) {
+            setAssignError(getErrorMessage(error));
+            // Sonst bliebe die Karte als "gerade zugewiesen" markiert, obwohl
+            // die Zuweisung zurueckgerollt wurde.
+            setJustAssignedShiftId(null);
+        }
     }
 
     function handleArrived(shiftId: string) {
@@ -58,6 +67,12 @@ export function SchedulePage() {
             {(error || usersError) && (
                 <ErrorBox role="alert">
                     Could not load the schedule: {getErrorMessage(error ?? usersError)}
+                </ErrorBox>
+            )}
+
+            {assignError && (
+                <ErrorBox role="alert">
+                    Could not assign the coach: {assignError}
                 </ErrorBox>
             )}
 
