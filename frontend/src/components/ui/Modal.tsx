@@ -1,10 +1,18 @@
 import {useEffect, useRef, type ReactNode} from "react";
 import styled from "styled-components";
 
+type Size = "md" | "lg";
+
+const WIDTHS: Record<Size, string> = {
+    md: "520px",
+    lg: "760px",
+};
+
 type ModalProps = {
     open: boolean;
     onClose: () => void;
     title: string;
+    size?: Size;
     children: ReactNode;
 };
 
@@ -20,7 +28,7 @@ type ModalProps = {
  * ein Fehlklick daneben wuerde die Eingaben verwerfen. Geschlossen wird nur
  * ueber den x-Button, Abbrechen – oder Escape.
  */
-export function Modal({open, onClose, title, children}: Readonly<ModalProps>) {
+export function Modal({open, onClose, title, size = "md", children}: Readonly<ModalProps>) {
     const ref = useRef<HTMLDialogElement>(null);
 
     useEffect(() => {
@@ -35,6 +43,7 @@ export function Modal({open, onClose, title, children}: Readonly<ModalProps>) {
             ref={ref}
             onCancel={onClose}
             aria-label={title}
+            $size={size}
         >
             <Header>
                 <h2>{title}</h2>
@@ -47,12 +56,12 @@ export function Modal({open, onClose, title, children}: Readonly<ModalProps>) {
     );
 }
 
-const Dialog = styled.dialog`
+const Dialog = styled.dialog<{ $size: Size }>`
     /* margin: auto zentriert das <dialog> im Viewport (inset: 0 kommt vom
        Browser). Explizit noetig, weil der globale Reset (* { margin: 0 }) das
        UA-margin: auto ueberschreibt und das Modal sonst oben links klebt. */
     margin: auto;
-    width: min(520px, calc(100vw - 2 * var(--space-4)));
+    width: min(${(props) => WIDTHS[props.$size]}, calc(100vw - 2 * var(--space-4)));
     max-height: calc(100vh - 2 * var(--space-5));
     padding: 0;
     border: 1px solid var(--color-border);

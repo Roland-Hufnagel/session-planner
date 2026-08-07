@@ -1,6 +1,7 @@
 package org.example.backend.controller;
 
 import org.example.backend.dto.CohortResponseDto;
+import org.example.backend.dto.ShiftBatchRequestDto;
 import org.example.backend.dto.ShiftRequestDto;
 import org.example.backend.dto.ShiftResponseDto;
 import org.example.backend.dto.UserResponseDto;
@@ -11,6 +12,7 @@ import org.example.backend.model.FederalState;
 import org.example.backend.model.Role;
 import org.example.backend.service.ShiftService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -24,9 +26,11 @@ import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -260,6 +264,143 @@ class ShiftControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value(
                         "'endTime' must be after 'startTime': 18:00 >= 09:00"));
+    }
+
+    // ----- createShifts: der Batch-Import -----
+    private static final String VALID_BATCH_BODY = """
+            {
+              "cohortId": "3f2a8f1e-0000-4000-8000-000000000002",
+              "shifts": [
+                {"title": "Morning session",   "date": "2026-08-05",
+                 "startTime": "09:00", "endTime": "12:30"},
+                {"title": "Afternoon session", "date": "2026-08-05",
+                 "startTime": "13:30", "endTime": "17:00"}
+              ]
+            }
+            """;
+
+    @Test
+    void createShifts_returns201AndEmptyBody() throws Exception {
+        // Kein Response-Body: das Frontend laedt den Schedule nach dem Import neu.
+        // Geprueft wird deshalb, was beim Service ankommt.
+        ArgumentCaptor<ShiftBatchRequestDto> batchCaptor =
+                ArgumentCaptor.forClass(ShiftBatchRequestDto.class);
+
+        mockMvc.perform(post("/api/shifts/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_BATCH_BODY))
+                .andExpect(status().isCreated()) // 201
+                .andExpect(content().string(""));
+
+        verify(mockShiftService).createShifts(batchCaptor.capture());
+        ShiftBatchRequestDto batch = batchCaptor.getValue();
+        assertThat(batch.cohortId())
+                .isEqualTo(UUID.fromString("3f2a8f1e-0000-4000-8000-000000000002"));
+        assertThat(batch.shifts()).hasSize(2);
+        // Die Zeilen tragen keine eigene cohortId und keinen Coach
+        assertThat(batch.shifts().getFirst().title()).isEqualTo("Morning session");
+        assertThat(batch.shifts().getFirst().startTime()).isEqualTo(LocalTime.of(9, 0));
+    }
+
+    @Test
+    void createShifts_returns400_whenShiftsListIsEmpty() throws Exception {
+        // @NotEmpty: ein Import ohne Zeilen ist ein Fehler des Aufrufers.
+        String emptyBatch = """
+                {
+                  "cohortId": "3f2a8f1e-0000-4000-8000-000000000002",
+                  "shifts": []
+                }
+                """;
+
+        mockMvc.perform(post("/api/shifts/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(emptyBatch))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.validationErrors.shifts").exists());
+
+        verify(mockShiftService, never()).createShifts(any());
+    }
+
+    @Test
+    void createShifts_returns400_whenCohortIdIsMissing() throws Exception {
+        // Die cohortId steht im Wrapper, nicht in den Zeilen -> genau ein Fehler.
+        String withoutCohortId = """
+                {
+                  "shifts": [
+                    {"title": "Morning session", "date": "2026-08-05",
+                     "startTime": "09:00", "endTime": "12:30"}
+                  ]
+                }
+                """;
+
+        mockMvc.perform(post("/api/shifts/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(withoutCohortId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.validationErrors.cohortId").exists());
+
+        verify(mockShiftService, never()).createShifts(any());
+    }
+
+    @Test
+    void createShifts_returns400WithRowIndex_whenRowsAreInvalid() throws Exception {
+        // Kernfall: @Valid an der shifts-Komponente kaskadiert in jedes Element,
+        // und der Property-Pfad traegt den Index der fehlerhaften Zeile.
+        String invalidRows = """
+                {
+                  "cohortId": "3f2a8f1e-0000-4000-8000-000000000002",
+                  "shifts": [
+                    {"title": "",                  "date": "2026-08-05",
+                     "startTime": "09:00", "endTime": "12:30"},
+                    {"title": "Afternoon session", "date": null,
+                     "startTime": "13:30", "endTime": "17:00"}
+                  ]
+                }
+                """;
+
+        mockMvc.perform(post("/api/shifts/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidRows))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.validationErrors['shifts[0].title']").exists())
+                .andExpect(jsonPath("$.validationErrors['shifts[1].date']").exists())
+                // Beide Zeilenfehler kommen gebuendelt, nicht nur der erste
+                .andExpect(jsonPath("$.validationErrors.length()").value(2));
+
+        verify(mockShiftService, never()).createShifts(any());
+    }
+
+    @Test
+    void createShifts_returns404_whenCohortDoesNotExist() throws Exception {
+        // createShifts gibt nichts zurueck -> doThrow statt when(...)
+        doThrow(new ResourceNotFoundException("No cohort found with id: 3f2a8f1e"))
+                .when(mockShiftService).createShifts(any(ShiftBatchRequestDto.class));
+
+        mockMvc.perform(post("/api/shifts/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_BATCH_BODY))
+                .andExpect(status().isNotFound()) // 404, wie bei createShift
+                .andExpect(jsonPath("$.message").value("No cohort found with id: 3f2a8f1e"));
+    }
+
+    @Test
+    void createShifts_returns400WithRowIndexInMessage_whenEndTimeIsNotAfterStartTime() throws Exception {
+        // Die Zeitpruefung passiert im Service -> flache Meldung mit Index-Praefix,
+        // nicht in validationErrors.
+        doThrow(new InvalidDateRangeException(
+                "shifts[1]: 'endTime' must be after 'startTime': 17:00 >= 09:00"))
+                .when(mockShiftService).createShifts(any(ShiftBatchRequestDto.class));
+
+        mockMvc.perform(post("/api/shifts/batch")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_BATCH_BODY))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "shifts[1]: 'endTime' must be after 'startTime': 17:00 >= 09:00"))
+                .andExpect(jsonPath("$.validationErrors").doesNotExist());
     }
 
     // ----- updateShift -----

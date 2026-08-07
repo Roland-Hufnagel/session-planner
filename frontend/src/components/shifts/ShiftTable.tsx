@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import type {Shift} from "../../types/shift";
 import {formatIsoDate, formatIsoTime} from "../../utils/date";
-import {Scroll, Table, Th, Row, Td, Muted} from "../ui/Table.ts";
+import {Scroll, Table, Th, Row, Td, Muted, Unassigned} from "../ui/Table.ts";
 
 type ShiftTableProps = {
     shifts: Shift[];
@@ -84,11 +84,6 @@ export function ShiftTable({shifts, onEdit, onDelete}: Readonly<ShiftTableProps>
         </Scroll>
     );
 }
-
-const Unassigned = styled.span`
-    color: var(--color-text-muted);
-    font-style: italic;
-`;
 
 const ActionCell = styled(Td)`
     width: 1%;

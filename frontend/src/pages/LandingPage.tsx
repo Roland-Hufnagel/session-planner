@@ -1,4 +1,5 @@
-import styled from "styled-components";
+import {useEffect, useState, type MouseEvent} from "react";
+import styled, {keyframes} from "styled-components";
 import {Navigate, useSearchParams} from "react-router-dom";
 import {useAuth} from "../hooks/useAuth.ts";
 
@@ -7,10 +8,28 @@ export function LandingPage() {
     const [searchParams] = useSearchParams();
     const isNotRegistered = searchParams.get("error") === "not_registered";
     const {user, isLoading} = useAuth();
+    const [isRedirecting, setIsRedirecting] = useState(false);
+
+    useEffect(() => {
+        function resetOnRestore(event: PageTransitionEvent) {
+            if (event.persisted) setIsRedirecting(false);
+        }
+
+        window.addEventListener("pageshow", resetOnRestore);
+        return () => window.removeEventListener("pageshow", resetOnRestore);
+    }, []);
 
     if (isLoading) return null;
     if (user) return <Navigate to={"/schedule"} replace/>;
 
+    function handleLoginClick(event: MouseEvent<HTMLAnchorElement>) {
+        if (isRedirecting) {
+            event.preventDefault();
+            return;
+        }
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+        setIsRedirecting(true);
+    }
 
     return (
         <Hero>
@@ -24,8 +43,13 @@ export function LandingPage() {
             </Subline>
 
             <Actions>
-                <GitHubLoginLink href="/oauth2/authorization/github">
-                    <GitHubMark/>
+                <GitHubLoginLink
+                    href="/oauth2/authorization/github"
+                    onClick={handleLoginClick}
+                    $busy={isRedirecting}
+                    aria-disabled={isRedirecting}
+                >
+                    {isRedirecting ? <Spinner aria-hidden="true"/> : <GitHubMark/>}
                     Login with GitHub
                 </GitHubLoginLink>
                 {isNotRegistered && (
@@ -118,7 +142,26 @@ const Actions = styled.div`
     margin-top: var(--space-3);
 `;
 
-const GitHubLoginLink = styled.a`
+const spin = keyframes`
+    to {
+        transform: rotate(360deg);
+    }
+`;
+
+const Spinner = styled.span`
+    width: 18px;
+    height: 18px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: var(--radius-pill);
+    animation: ${spin} 700ms linear infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-duration: 2400ms;
+    }
+`;
+
+const GitHubLoginLink = styled.a<{ $busy: boolean }>`
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -135,6 +178,14 @@ const GitHubLoginLink = styled.a`
     transition: background var(--transition-fast), box-shadow var(--transition-fast),
     transform var(--transition-fast);
 
+    /* Waehrend der Weiterleitung keine weiteren Klicks: Ein zweiter Klick wuerde
+       den OAuth-Flow von vorn starten. aria-disabled sagt es den Hilfsmitteln,
+       pointer-events der Maus – ein Link kennt kein disabled-Attribut. */
+
+    ${(props) => props.$busy && `
+        pointer-events: none;
+        opacity: 0.85;
+    `}
     &:hover {
         background: var(--color-primary-hover);
         box-shadow: var(--shadow-2);

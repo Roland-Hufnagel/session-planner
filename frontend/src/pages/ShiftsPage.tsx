@@ -5,7 +5,7 @@ import {useShifts} from "../hooks/useShifts";
 import {useCohorts} from "../hooks/useCohorts";
 import {useUsers} from "../hooks/useUsers";
 import {getErrorMessage} from "../api/errors";
-import type {Shift, ShiftInput} from "../types/shift";
+import type {ParsedShiftRow, Shift, ShiftInput} from "../types/shift";
 import {todayIso} from "../utils/date";
 import {Button} from "../components/ui/Button";
 import {Modal} from "../components/ui/Modal";
@@ -14,6 +14,7 @@ import {Select} from "../components/ui/Field";
 import {Toggle} from "../components/ui/Toggle";
 import {ShiftTable} from "../components/shifts/ShiftTable";
 import {ShiftForm} from "../components/shifts/ShiftForm";
+import {ShiftImportDialog} from "../components/shifts/ShiftImportDialog";
 import {Toolbar, Title, Count, Info, ErrorBox, Empty} from "../components/ui/PageState.ts";
 
 export function ShiftsPage() {
@@ -23,10 +24,11 @@ export function ShiftsPage() {
 
     const {cohorts, error: cohortsError, isLoading: cohortsLoading} = useCohorts();
     const {users} = useUsers();
-    const {shifts, error, isLoading, addShift, editShift, removeShift} =
+    const {shifts, error, isLoading, addShift, editShift, removeShift, importShifts} =
         useShifts(selectedCohortId);
 
     const [createOpen, setCreateOpen] = useState(false);
+    const [importOpen, setImportOpen] = useState(false);
     const [shiftToEdit, setShiftToEdit] = useState<Shift | null>(null);
     const [shiftToDelete, setShiftToDelete] = useState<Shift | null>(null);
     const [deleting, setDeleting] = useState(false);
@@ -44,6 +46,11 @@ export function ShiftsPage() {
     async function handleCreate(input: ShiftInput) {
         await addShift(input);
         setCreateOpen(false);
+    }
+
+    async function handleImport(rows: ParsedShiftRow[]) {
+        await importShifts(rows);
+        setImportOpen(false);
     }
 
     async function handleEdit(input: ShiftInput) {
@@ -72,12 +79,19 @@ export function ShiftsPage() {
                         <Count>{shifts.length} entries</Count>
                     )}
                 </div>
-                <Button
-                    onClick={() => setCreateOpen(true)}
-                    disabled={selectableCohorts.length === 0}
-                >
-                    Add shift
-                </Button>
+                <ToolbarActions>
+                    <Button
+                        onClick={() => setCreateOpen(true)}
+                        disabled={selectableCohorts.length === 0}
+                    >
+                        Add shift
+                    </Button>
+                    {selectedCohortId && (
+                        <Button $variant="secondary" onClick={() => setImportOpen(true)}>
+                            Import CSV
+                        </Button>
+                    )}
+                </ToolbarActions>
             </Toolbar>
 
             <FilterBar>
@@ -147,6 +161,18 @@ export function ShiftsPage() {
             </Modal>
 
             <Modal
+                open={importOpen}
+                onClose={() => setImportOpen(false)}
+                title="Import shifts from CSV"
+                size="lg"
+            >
+                <ShiftImportDialog
+                    onImport={handleImport}
+                    onCancel={() => setImportOpen(false)}
+                />
+            </Modal>
+
+            <Modal
                 open={shiftToEdit !== null}
                 onClose={() => setShiftToEdit(null)}
                 title="Edit shift"
@@ -174,6 +200,12 @@ export function ShiftsPage() {
         </>
     );
 }
+
+const ToolbarActions = styled.div`
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+`;
 
 const FilterBar = styled.div`
     display: flex;

@@ -2,6 +2,7 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import org.example.backend.dto.AssignCoachRequestDto;
+import org.example.backend.dto.ShiftBatchRequestDto;
 import org.example.backend.dto.ShiftRequestDto;
 import org.example.backend.dto.ShiftResponseDto;
 import org.example.backend.exception.MissingQueryParameterException;
@@ -42,6 +43,12 @@ public class ShiftController {
     @ResponseStatus(HttpStatus.CREATED)
     public ShiftResponseDto createShift(@Valid @RequestBody ShiftRequestDto shiftRequestDto) {
         return shiftService.createShift(shiftRequestDto);
+    }
+
+    @PostMapping("/batch")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createShifts(@Valid @RequestBody ShiftBatchRequestDto shiftBatchRequestDto) {
+        shiftService.createShifts(shiftBatchRequestDto);
     }
 
     @PutMapping("/{id}")

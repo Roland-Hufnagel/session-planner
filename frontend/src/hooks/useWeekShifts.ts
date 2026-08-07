@@ -12,7 +12,11 @@ import type {User} from "../types/user";
  * einer Shift; das Anlegen bleibt in der Shift-Verwaltung.
  */
 export function useWeekShifts(from: string, to: string) {
-    const {data, error, isLoading, mutate} = useSWR<Shift[]>(weekShiftsUrl(from, to), fetcher);
+    const {data, error, isLoading, mutate} = useSWR<Shift[]>(
+        weekShiftsUrl(from, to),
+        fetcher,
+        {refreshInterval: 5000},
+    );
 
     const shifts = data ?? [];
 

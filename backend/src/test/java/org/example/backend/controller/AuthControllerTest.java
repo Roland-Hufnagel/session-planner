@@ -1,5 +1,8 @@
 package org.example.backend.controller;
 
+import org.example.backend.model.Role;
+import org.example.backend.model.User;
+import org.example.backend.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +29,28 @@ class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    void getMe_prefersStoredAvatar_overGithubProfile() throws Exception {
+        String ownAvatar = "https://example.com/pete-in-the-alps.png";
+        userRepository.save(User.builder()
+                .name("Peter Klein").nickname("Pete").role(Role.COACH)
+                .githubName("peterk-stored").email("peterk-stored@neuefische.de")
+                .avatarUrl(ownAvatar)
+                .build());
+
+        mockMvc.perform(get("/api/auth/me")
+                        .with(oauth2Login().attributes(attrs -> {
+                            attrs.put("login", "peterk-stored");
+                            attrs.put("name", "Peter Klein");
+                            attrs.put("avatar_url", "https://avatars.githubusercontent.com/u/1?v=4");
+                        })))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.avatarUrl").value(ownAvatar));
+    }
 
     @Test
     void getMe_returnsAttributes_whenAuthenticated() throws Exception {
